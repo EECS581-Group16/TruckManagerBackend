@@ -1,6 +1,6 @@
-const mysql = require('mysql');
-const config = require('./databaseconfig.json')
-const express = require('express');
+const mysql = require('mysql'); //used to interact with mysql databases
+const config = require('./databaseconfig.json') //configuration file that contains sensitive database login information
+const express = require('express'); //node package used to create backend server and api.
 
 const app = express();
 
