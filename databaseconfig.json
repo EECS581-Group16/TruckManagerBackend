@@ -1,6 +1,0 @@
-{
-    "RDS_HOSTNAME": "truck-manager.ccvmmowthmex.us-east-2.rds.amazonaws.com",
-    "RDS_USERNAME": "admin",
-    "RDS_PASSWORD": "adminPassword",
-    "RDS_PORT": "3306"
-}
