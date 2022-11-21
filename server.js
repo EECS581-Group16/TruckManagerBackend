@@ -44,6 +44,27 @@ app.get("/loginData", (req, res) => {
     });
 });
 
+//this is beginning of testing for correct username and password.
+//for testing purposes this loops through the data returned from the database for a valid username
+//if given valid username it checks for valid password.
+//if neither match it returns json with data of 'invalid credentials'
+app.get("/login", (req, res) => {
+    const q = "SELECT Username, Passcode FROM Login.Login";
+    //const values = ["admin", "password"];
+    connection.query(q, (err, result) => {
+        if (err) return res.json(err);
+        const data = result
+        for(let i = 0; i < data.length; i++) {
+            if(data[i].Username == "admin") {
+                if(data[i].Passcode == "password") {
+                    return res.json(data[i]);
+                }
+            }
+        }
+        return res.json('invalid credentials');
+    });
+});
+
 //creates new row in Login table
 //req will be used to input query data once we have this connected to our front end
 //for testing purposes we are using hardcoded values, sprint 6 will connect this to the front end
