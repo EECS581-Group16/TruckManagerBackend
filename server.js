@@ -1,8 +1,13 @@
 const mysql = require('mysql'); //used to interact with mysql databases
 const config = require('./databaseconfig.json') //configuration file that contains sensitive database login information
 const express = require('express'); //node package used to create backend server and api.
-
+const cors = require('cors');
 const app = express();
+
+app.use(express.json())
+app.use(cors({
+    origin: '*'
+}));
 
 //database connection
 const connection = mysql.createConnection({
@@ -29,7 +34,20 @@ app.get("/invoices", (req, res) => {
 //req will be used to input query data once we have this connected to our front end
 app.post("/invoices", (req, res) => {
     const q = "INSERT INTO accounting.load_tickets_test (`ticket_number`,`customer`,`date`,`description`,`order`,`job`,`driver_id`,`truck_number`,`hours`,`tons`,`rate`,`driver_rate`) VALUES (?)";
-    const values = [98288, "JMF", "2022-09-21T05:00:00.000Z", "Plantt 1 / 0175A23112", "23112", "175", "IL", "304", 69, 32.09, 69, 69];
+    const values = [
+        req.body.ticketNum, 
+        "JMF", 
+        req.body.date, 
+        req.body.description, 
+        req.body.orderNum, 
+        "175", 
+        req.body.driver, 
+        req.body.truckNum, 
+        req.body.hours, 
+        req.body.tons, 
+        req.body.unitPrice, 
+        69
+    ];
     connection.query(q, [values], (err, result, fields) => {
         if (err) return res.json(err);
         return res.json("Invoice created successfully!");
