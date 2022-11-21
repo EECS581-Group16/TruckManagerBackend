@@ -30,23 +30,23 @@ app.get("/invoices", (req, res) => {
     });
 });
 
-//posts new data into database -- currently harcoded for testing, will eventually take user input from front end
-//req will be used to input query data once we have this connected to our front end
+//posts new data into database
+//TODO: figure out what to do with "null" values
 app.post("/invoices", (req, res) => {
     const q = "INSERT INTO accounting.load_tickets_test (`ticket_number`,`customer`,`date`,`description`,`order`,`job`,`driver_id`,`truck_number`,`hours`,`tons`,`rate`,`driver_rate`) VALUES (?)";
     const values = [
         req.body.ticketNum, 
-        "JMF", 
+        "null", 
         req.body.date, 
         req.body.description, 
         req.body.orderNum, 
-        "175", 
+        "null", 
         req.body.driver, 
         req.body.truckNum, 
         req.body.hours, 
         req.body.tons, 
         req.body.unitPrice, 
-        69
+        0
     ];
     connection.query(q, [values], (err, result, fields) => {
         if (err) return res.json(err);
