@@ -1,12 +1,12 @@
 const mysql = require('mysql'); //used to interact with mysql databases
 const config = require('./databaseconfig.json') //configuration file that contains sensitive database login information
 const express = require('express'); //node package used to create backend server and api.
-const cors = require('cors');
+const cors = require('cors'); //needed to prevent cors error
 const app = express();
 
 app.use(express.json())
 app.use(cors({
-    origin: '*'
+    origin: '*' //temporary for development, this will eventually be the server where our app is hosted
 }));
 
 //database connection
