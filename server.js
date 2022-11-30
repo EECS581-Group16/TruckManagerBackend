@@ -85,9 +85,9 @@ app.post("/login", (req, res) => {
 //creates new row in Login table
 //req will be used to input query data once we have this connected to our front end
 //for testing purposes we are using hardcoded values, sprint 6 will connect this to the front end
-app.post("/login", (req, res) => {
+app.post("/logintest", (req, res) => {
     const q = "INSERT INTO Login.Login(`Employee_ID`, `Username`, `Passcode`, `Email`) VALUES (?)";
-    const values = [1234, "admin", "password", "admin@admin.com"];
+    const values = [1111, "test", "testpassword", "test@test.com"];
     connection.query(q, [values], (err, result, fields) => {
         if (err) return res.json(err);
         return res.json("User created successfully!");
