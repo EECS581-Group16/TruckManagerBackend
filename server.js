@@ -66,20 +66,19 @@ app.get("/loginData", (req, res) => {
 //for testing purposes this loops through the data returned from the database for a valid username
 //if given valid username it checks for valid password.
 //if neither match it returns json with data of 'invalid credentials'
-app.get("/login", (req, res) => {
+app.post("/login", (req, res) => {
     const q = "SELECT Username, Passcode FROM Login.Login";
-    //const values = ["admin", "password"];
     connection.query(q, (err, result) => {
         if (err) return res.json(err);
         const data = result
         for(let i = 0; i < data.length; i++) {
-            if(data[i].Username == "admin") {
-                if(data[i].Passcode == "password") {
-                    return res.json(data[i]);
+            if(data[i].Username === req.body.username) {
+                if(data[i].Passcode === req.body.password) {
+                    return res.json({response: 'valid credentials', accepted: true});
                 }
             }
         }
-        return res.json('invalid credentials');
+        return res.json({response: 'invalid credentials', accepted: false});
     });
 });
 
