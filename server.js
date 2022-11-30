@@ -63,9 +63,12 @@ app.get("/loginData", (req, res) => {
 });
 
 //this is beginning of testing for correct username and password.
-//for testing purposes this loops through the data returned from the database for a valid username
+//this loops through the data returned from the database for a valid username
 //if given valid username it checks for valid password.
-//if neither match it returns json with data of 'invalid credentials'
+//if there is a match it will return an json with response and accepted: true
+//if neither match it returns json with data of 'invalid credentials' and accepted: false
+//if users become large it will probably be more efficient to query the username and password and check if it was successful or not
+//instead of pulling every user and password from the databae.
 app.post("/login", (req, res) => {
     const q = "SELECT Username, Passcode FROM Login.Login";
     connection.query(q, (err, result) => {
