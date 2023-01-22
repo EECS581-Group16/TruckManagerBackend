@@ -25,7 +25,7 @@ async function mail() {
 
     const mailOptions = {
         from: 'truckmanagerservice@gmail.com',
-        to: 'masonxotto2@gmail.com',
+        to: process.env.TEST_EMAIL,
         subject: 'Nodemailer Test Email',
         text: 'Email sent with nodemailer'
     }
