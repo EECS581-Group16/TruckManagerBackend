@@ -1,6 +1,5 @@
 const mysql = require('mysql'); //used to interact with mysql databases
 require('dotenv').config();
-const config = require('./databaseconfig.json') //configuration file that contains sensitive database login information
 const express = require('express'); //node package used to create backend server and api.
 const nodemailer = require('nodemailer'); //node package used for sending emails
 const cors = require('cors'); //needed to prevent cors error
