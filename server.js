@@ -53,13 +53,12 @@ app.put("/forgotpassword", (req, res) => {
     const username = req.body.username;
     const newPassword = req.body.newPassword;
     if(!passwordRegex.test(newPassword)) {
-        return res.json({response: false, errcode: "weak"}) //password does not meet requirements
+        return res.json({response: false, errcode: 1}) //password does not meet requirements
     }
     const q = `UPDATE Login.Login SET Passcode = "${newPassword}" WHERE Username = "${username}"`;
     connection.query(q, (err, result) => {
-        console.log(err);
-        if (err) return res.json({response: false, errcode: "fail"}); //failed to update to database
-        return res.json({response: true, errcode: ""}); //successful password change
+        if (err) return res.json({response: false, errcode: 2}); //failed to update to database
+        return res.json({response: true, errcode: 0}); //successful password change
     });
 })
 
