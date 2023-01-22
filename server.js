@@ -8,6 +8,37 @@ const app = express();
 
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,32}$/;
 
+//this uses nodemailer to send a email from truckmanagerservice@gmail.com
+async function mail() {
+
+    let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            type: 'OAuth2',
+            user: process.env.OAUTH_USER,
+            pass: process.env.OAUTH_PASS,
+            clientId: process.env.OAUTH_CLIENT_ID,
+            clientSecret: process.env.OAUTH_CLIENT_SECRET,
+            refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+        },
+    });
+
+    const mailOptions = {
+        from: 'truckmanagerservice@gmail.com',
+        to: 'masonxotto2@gmail.com',
+        subject: 'Nodemailer Test Email',
+        text: 'Email sent with nodemailer'
+    }
+
+    let info = await transporter.sendMail(mailOptions, (error, info) => {
+        if(error) {console.log(error);}
+        else {
+            console.log("Email Sent!");
+        }
+    });
+}
+mail();
+
 app.use(express.json())
 app.use(cors({
     origin: '*' //temporary for development, this will eventually be the server where our app is hosted
