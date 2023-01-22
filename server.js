@@ -4,6 +4,8 @@ const express = require('express'); //node package used to create backend server
 const cors = require('cors'); //needed to prevent cors error
 const app = express();
 
+const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,32}$/;
+
 app.use(express.json())
 app.use(cors({
     origin: '*' //temporary for development, this will eventually be the server where our app is hosted
@@ -50,11 +52,14 @@ app.get("/validusername/:username", (req, res) => {
 app.put("/forgotpassword", (req, res) => {
     const username = req.body.username;
     const newPassword = req.body.newPassword;
+    if(!passwordRegex.test(newPassword)) {
+        return res.json({response: false, errcode: "weak"})
+    }
     const q = `UPDATE Login.Login SET Passcode = "${newPassword}" WHERE Username = "${username}"`;
     connection.query(q, (err, result) => {
         console.log(err);
-        if (err) return res.json({response: false});
-        return res.json({response: true});
+        if (err) return res.json({response: false, errcode: "fail"});
+        return res.json({response: true, errcode: ""});
     });
 })
 
