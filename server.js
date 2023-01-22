@@ -45,6 +45,19 @@ app.get("/validusername/:username", (req, res) => {
     })
 })
 
+//This will update the password in the database with the given username and new password
+//NEED TO ENCRYPT PASSWORDS IN FUTURE
+app.put("/forgotpassword", (req, res) => {
+    const username = req.body.username;
+    const newPassword = req.body.newPassword;
+    const q = `UPDATE Login.Login SET Passcode = "${newPassword}" WHERE Username = "${username}"`;
+    connection.query(q, (err, result) => {
+        console.log(err);
+        if (err) return res.json({response: false});
+        return res.json({response: true});
+    });
+})
+
 //posts new data into database
 //TODO: figure out what to do with "null" values
 app.post("/invoices", (req, res) => {
