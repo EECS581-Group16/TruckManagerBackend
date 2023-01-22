@@ -36,7 +36,6 @@ async function mail() {
         }
     });
 }
-mail();
 
 app.use(express.json())
 app.use(cors({
