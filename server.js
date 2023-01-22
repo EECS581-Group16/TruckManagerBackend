@@ -1,10 +1,43 @@
 const mysql = require('mysql'); //used to interact with mysql databases
+require('dotenv').config();
 const config = require('./databaseconfig.json') //configuration file that contains sensitive database login information
 const express = require('express'); //node package used to create backend server and api.
+const nodemailer = require('nodemailer'); //node package used for sending emails
 const cors = require('cors'); //needed to prevent cors error
 const app = express();
 
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,32}$/;
+
+//this uses nodemailer to send a email from truckmanagerservice@gmail.com
+async function mail() {
+
+    let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            type: 'OAuth2',
+            user: process.env.OAUTH_USER,
+            pass: process.env.OAUTH_PASS,
+            clientId: process.env.OAUTH_CLIENT_ID,
+            clientSecret: process.env.OAUTH_CLIENT_SECRET,
+            refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+        },
+    });
+
+    const mailOptions = {
+        from: 'truckmanagerservice@gmail.com',
+        to: process.env.TEST_EMAIL,
+        subject: 'Nodemailer Test Email',
+        text: 'Email sent with nodemailer'
+    }
+
+    let info = await transporter.sendMail(mailOptions, (error, info) => {
+        if(error) {console.log(error);}
+        else {
+            console.log("Email Sent!");
+        }
+    });
+}
+mail();
 
 app.use(express.json())
 app.use(cors({
@@ -13,10 +46,10 @@ app.use(cors({
 
 //database connection
 const connection = mysql.createConnection({
-    host: config.RDS_HOSTNAME,
-    user: config.RDS_USERNAME,
-    password: config.RDS_PASSWORD,
-    port: config.RDS_PORT 
+    host: process.env.RDS_HOSTNAME,
+    user: process.env.RDS_USERNAME,
+    password: process.env.RDS_PASSWORD,
+    port: process.env.RDS_PORT 
 });
 
 app.get("/", (req, res) => {
