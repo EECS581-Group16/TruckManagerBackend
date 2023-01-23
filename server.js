@@ -1,3 +1,10 @@
+/*
+-Author: Mason Otto
+-Name: server.js
+-Description: This is the backend API that includes all of the endpoints for communication
+    between the front end and database.
+*/
+
 const mysql = require('mysql'); //used to interact with mysql databases
 require('dotenv').config();
 const express = require('express'); //node package used to create backend server and api.
@@ -81,9 +88,11 @@ app.get("/validusername/:username", (req, res) => {
 /*
 -Author: Mason Otto
 -Last Modified: 1/23/2023
--Summary: This will set an OTP in the SQL database for the user that requested
+-Description: This will set an OTP in the SQL database for the user that requested
     it. Then it will send that OTP to the email that user has stored in 
     the database.
+-Returns: JSON response - status of email sent
+-TODO: Give OTP an expiration.
 */
 app.put("/requestotp", (req, res) => {
     const username = req.body.username;
@@ -104,6 +113,34 @@ app.put("/requestotp", (req, res) => {
         });
     });
     
+})
+
+/*
+-Author: Mason Otto
+-Last Modified: 1/23/2023
+-Description: This will take in the user input OTP and their username to verify if the OTP is correct.
+    If correct then it will allow the user to update their password. 
+-Returns: JSON response - status of OTP verification
+-TODO: Figure out some way to determine if OTP has expired.
+*/
+app.put("/verifyotp", (req, res) => {
+    const username = req.body.username;
+    const OTP = parseInt(req.body.otp);
+    const q = `SELECT OTP FROM Login.Login WHERE Username = "${username}"`;
+    connection.query(q, (err, result) => {
+        if(err) return res.json(err);
+        if(result[0]) {
+            if (OTP === parseInt(result[0].OTP)) {
+                return res.json({response: "VERIFIED"});
+            }
+            else {
+                return res.json({response: "FAILED"});
+            }
+        }
+        else {
+            return res.json({response: "FAILED"});
+        }
+    });
 })
 
 //This will update the password in the database with the given username and new password
