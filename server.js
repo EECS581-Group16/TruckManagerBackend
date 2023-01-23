@@ -8,8 +8,7 @@ const app = express();
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,32}$/;
 
 //this uses nodemailer to send a email from truckmanagerservice@gmail.com
-async function mail() {
-
+async function mail(email, otp) {
     let transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -24,9 +23,9 @@ async function mail() {
 
     const mailOptions = {
         from: 'truckmanagerservice@gmail.com',
-        to: process.env.TEST_EMAIL,
-        subject: 'Nodemailer Test Email',
-        text: 'Email sent with nodemailer'
+        to: email,
+        subject: 'Reset Password Request OTP',
+        html: `<p>Your One Time Pin is <b>${otp}</b>. Use this to reset your password.<p>`
     }
 
     let info = await transporter.sendMail(mailOptions, (error, info) => {
@@ -57,6 +56,7 @@ app.get("/", (req, res) => {
 //returns all invoices tables
 app.get("/invoices", (req, res) => {
     const q = "SELECT * FROM accounting.load_tickets_test";
+    //const q = "SELECT * FROM accounting.load_tickets";
     connection.query(q, (err, result) => {
         if (err) return res.json(err);
         return res.json(result);
@@ -76,6 +76,34 @@ app.get("/validusername/:username", (req, res) => {
             return res.json({response: false});
         }
     })
+})
+
+/*
+-Author: Mason Otto
+-Last Modified: 1/23/2023
+-Summary: This will set an OTP in the SQL database for the user that requested
+    it. Then it will send that OTP to the email that user has stored in 
+    the database.
+*/
+app.put("/requestotp", (req, res) => {
+    const username = req.body.username;
+    const OTP = Math.floor(100000 + Math.random() * 900000);
+    const q = `SELECT Email FROM Login.Login WHERE Username = "${username}" `;
+    const q2 = `UPDATE Login.Login SET OTP = ${OTP} WHERE Username = "${username}"`;
+    connection.query(q2, (err, result) => {
+        if(err) return res.json(err);
+        connection.query(q, (err, result) => {
+            if(err) return res.json(err);
+            if(result[0]) {
+                mail(result[0].Email, OTP);
+                return res.json({response: "EMAIL SENT"});
+            }
+            else {
+                return res.json({response: "EMAIL FAILED"});
+            }
+        });
+    });
+    
 })
 
 //This will update the password in the database with the given username and new password
