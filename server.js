@@ -1,12 +1,21 @@
+/*-------------------------------------------------------------------
+    Import dependencies
+-------------------------------------------------------------------*/
 const mysql = require('mysql'); //used to interact with mysql databases
-require('dotenv').config();
+require('dotenv').config(); //dotenv for use with npm, protects sensitive information
 const express = require('express'); //node package used to create backend server and api.
 const nodemailer = require('nodemailer'); //node package used for sending emails
 const cors = require('cors'); //needed to prevent cors error
-const app = express();
+const app = express(); //creates the app express.js object which handles requests
 
+/*-------------------------------------------------------------------
+    Constants
+-------------------------------------------------------------------*/
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,32}$/;
 
+/*-------------------------------------------------------------------
+    Functions
+-------------------------------------------------------------------*/
 //this uses nodemailer to send a email from truckmanagerservice@gmail.com
 async function mail() {
 
@@ -37,12 +46,48 @@ async function mail() {
     });
 }
 
-app.use(express.json())
+/*-------------------------------------------------------------------
+    Configure Express.js
+
+    Express.js handles GET, POST, PUT, etc... requests to the
+    backend, and does so through the app object via the corresponding
+    methods. When making a request through the app object, you
+    include a callback function with a request and response object.
+    The request object includes any data that the user provides which
+    may be relevant to a query. The response object handles the response
+    which is returned to the client, which in our case is usually parsed
+    JSON data which can be used as a javascript object.
+
+    Ex:
+    
+    app.post("/", (req, res) => {
+        const username = req.body.username;
+    });
+
+    This would handle a post request to the "/" or base directory
+    and would assign username information provided by the user to
+    the variable username.
+-------------------------------------------------------------------*/
+app.use(express.json());
+
+/*-------------------------------------------------------------------
+    Configure CORS (Cross-Origin Resource Sharing)
+
+    This is middleware for Express.js, it determines what origin's
+    to accept requests from by setting the Access-Control-Allow-Origin
+    header in the response. This is currently set to "*" for
+    purposes of development, to allow requests from any origin.
+-------------------------------------------------------------------*/
 app.use(cors({
     origin: '*' //temporary for development, this will eventually be the server where our app is hosted
 }));
 
-//database connection
+/*-------------------------------------------------------------------
+    Database connection
+
+    Connects to mysql using protected credentials stored in
+    .env file
+-------------------------------------------------------------------*/
 const connection = mysql.createConnection({
     host: process.env.RDS_HOSTNAME,
     user: process.env.RDS_USERNAME,
@@ -50,6 +95,13 @@ const connection = mysql.createConnection({
     port: process.env.RDS_PORT 
 });
 
+/*-------------------------------------------------------------------
+    Backend Endpoints
+
+    These include GET, POST, PUT, etc... requests that send
+    information to or retrieve information from the database.
+    This is the meat of the server.
+-------------------------------------------------------------------*/
 app.get("/", (req, res) => {
     res.json("hello this is the backend");
 });
@@ -160,7 +212,15 @@ app.post("/logintest", (req, res) => {
     });
 });
 
-//runs backend server on localhost:5000
+/*-------------------------------------------------------------------
+    Start server 
+    
+    Start server and listen for requests on port 5000
+    (localhost:5000 - worth noting this is not always the same
+    as the url which npm generates, but is always the correct url
+    for Thunder Client). When the server is successfully started, log
+    message "connected to backend!" to console. 
+-------------------------------------------------------------------*/
 app.listen(5000, () =>{
     console.log("connected to backend!");
 });
