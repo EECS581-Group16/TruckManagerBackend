@@ -1,3 +1,10 @@
+/*
+-Author: Mason Otto
+-Name: server.js
+-Description: This is the backend API that includes all of the endpoints for communication
+    between the front end and database.
+*/
+
 /*-------------------------------------------------------------------
     Import dependencies
 -------------------------------------------------------------------*/
@@ -17,8 +24,7 @@ const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,32}$/;
     Functions
 -------------------------------------------------------------------*/
 //this uses nodemailer to send a email from truckmanagerservice@gmail.com
-async function mail() {
-
+async function mail(email, otp) {
     let transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -33,9 +39,9 @@ async function mail() {
 
     const mailOptions = {
         from: 'truckmanagerservice@gmail.com',
-        to: process.env.TEST_EMAIL,
-        subject: 'Nodemailer Test Email',
-        text: 'Email sent with nodemailer'
+        to: email,
+        subject: 'Reset Password Request OTP',
+        html: `<p>Your One Time Pin is <b>${otp}</b>. Use this to reset your password.<p>`
     }
 
     let info = await transporter.sendMail(mailOptions, (error, info) => {
@@ -109,6 +115,7 @@ app.get("/", (req, res) => {
 //returns all invoices tables
 app.get("/invoices", (req, res) => {
     const q = "SELECT * FROM accounting.load_tickets_test";
+    //const q = "SELECT * FROM accounting.load_tickets";
     connection.query(q, (err, result) => {
         if (err) return res.json(err);
         return res.json(result);
@@ -128,6 +135,64 @@ app.get("/validusername/:username", (req, res) => {
             return res.json({response: false});
         }
     })
+})
+
+/*
+-Author: Mason Otto
+-Last Modified: 1/23/2023
+-Description: This will set an OTP in the SQL database for the user that requested
+    it. Then it will send that OTP to the email that user has stored in 
+    the database.
+-Returns: JSON response - status of email sent
+-TODO: Give OTP an expiration.
+*/
+app.put("/requestotp", (req, res) => {
+    const username = req.body.username;
+    const OTP = Math.floor(100000 + Math.random() * 900000);
+    const q = `SELECT Email FROM Login.Login WHERE Username = "${username}" `;
+    const q2 = `UPDATE Login.Login SET OTP = ${OTP} WHERE Username = "${username}"`;
+    connection.query(q2, (err, result) => {
+        if(err) return res.json(err);
+        connection.query(q, (err, result) => {
+            if(err) return res.json(err);
+            if(result[0]) {
+                mail(result[0].Email, OTP);
+                return res.json({response: "EMAIL SENT", email: result[0].Email});
+            }
+            else {
+                return res.json({response: "EMAIL FAILED"});
+            }
+        });
+    });
+    
+})
+
+/*
+-Author: Mason Otto
+-Last Modified: 1/23/2023
+-Description: This will take in the user input OTP and their username to verify if the OTP is correct.
+    If correct then it will allow the user to update their password. 
+-Returns: JSON response - status of OTP verification
+-TODO: Figure out some way to determine if OTP has expired.
+*/
+app.put("/verifyotp", (req, res) => {
+    const username = req.body.username;
+    const OTP = parseInt(req.body.otp);
+    const q = `SELECT OTP FROM Login.Login WHERE Username = "${username}"`;
+    connection.query(q, (err, result) => {
+        if(err) return res.json(err);
+        if(result[0]) {
+            if (OTP === parseInt(result[0].OTP)) {
+                return res.json({response: "VERIFIED"});
+            }
+            else {
+                return res.json({response: "FAILED"});
+            }
+        }
+        else {
+            return res.json({response: "FAILED"});
+        }
+    });
 })
 
 //This will update the password in the database with the given username and new password
