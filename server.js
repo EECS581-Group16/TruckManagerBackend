@@ -105,7 +105,7 @@ app.put("/requestotp", (req, res) => {
             if(err) return res.json(err);
             if(result[0]) {
                 mail(result[0].Email, OTP);
-                return res.json({response: "EMAIL SENT"});
+                return res.json({response: "EMAIL SENT", email: result[0].Email});
             }
             else {
                 return res.json({response: "EMAIL FAILED"});
