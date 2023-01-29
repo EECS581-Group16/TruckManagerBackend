@@ -13,11 +13,11 @@ require('dotenv').config(); //dotenv for use with npm, protects sensitive inform
 const express = require('express'); //node package used to create backend server and api.
 const nodemailer = require('nodemailer'); //node package used for sending emails
 const cors = require('cors'); //needed to prevent cors error
-const app = express(); //creates the app express.js object which handles requests
 
 /*-------------------------------------------------------------------
     Constants
 -------------------------------------------------------------------*/
+const app = express(); //creates the app express.js object which handles requests
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,32}$/;
 
 /*-------------------------------------------------------------------
@@ -106,7 +106,7 @@ const connection = mysql.createConnection({
 
     These include GET, POST, PUT, etc... requests that send
     information to or retrieve information from the database.
-    This is the meat of the server.
+    This is the meat of the backend.
 -------------------------------------------------------------------*/
 app.get("/", (req, res) => {
     res.json("hello this is the backend");
