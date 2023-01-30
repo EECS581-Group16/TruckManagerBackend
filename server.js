@@ -13,11 +13,11 @@ require('dotenv').config(); //dotenv for use with npm, protects sensitive inform
 const express = require('express'); //node package used to create backend server and api.
 const nodemailer = require('nodemailer'); //node package used for sending emails
 const cors = require('cors'); //needed to prevent cors error
-const app = express(); //creates the app express.js object which handles requests
 
 /*-------------------------------------------------------------------
     Constants
 -------------------------------------------------------------------*/
+const app = express(); //creates the app express.js object which handles requests
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,32}$/;
 
 /*-------------------------------------------------------------------
@@ -106,7 +106,7 @@ const connection = mysql.createConnection({
 
     These include GET, POST, PUT, etc... requests that send
     information to or retrieve information from the database.
-    This is the meat of the server.
+    This is the meat of the backend.
 -------------------------------------------------------------------*/
 app.get("/", (req, res) => {
     res.json("hello this is the backend");
@@ -231,6 +231,35 @@ app.post("/invoices", (req, res) => {
     connection.query(q, [values], (err, result, fields) => {
         if (err) return res.json(err);
         return res.json({created: true});
+    });
+});
+
+/*
+-Author: Ryan Penrod
+-Last Modified: 1/30/2023
+-Description: This create a new row on the Login table
+    for a user given the information they provided
+-Returns: JSON response - status account creation
+-TODO: Consider all fields
+*/
+app.post("/register", (req, res) => {
+    const q = "INSERT INTO Login.Login (`Employee_ID`,`Username`,`Passcode`,`Email`,`OTP`,`Verified`,`Account_Type`,`Security_Question1`,`Q1_Answer`,`Security_Question2`,`Q2_Answer`) VALUES (?)";
+    const values = [
+        req.body.employeeId, 
+        req.body.username, 
+        req.body.passcode, 
+        req.body.email, 
+        "null", 
+        0, 
+        "null", 
+        "null", 
+        "null", 
+        "null", 
+        "null"
+    ];
+    connection.query(q, [values], (err, result, fields) => {
+        if (err) return res.json(err);
+        return res.json("Account created successfully!");
     });
 });
 
