@@ -234,6 +234,35 @@ app.post("/invoices", (req, res) => {
     });
 });
 
+/*
+-Author: Ryan Penrod
+-Last Modified: 1/30/2023
+-Description: This create a new row on the Login table
+    for a user given the information they provided
+-Returns: JSON response - status account creation
+-TODO: Consider all fields
+*/
+app.post("/register", (req, res) => {
+    const q = "INSERT INTO Login.Login (`Employee_ID`,`Username`,`Passcode`,`Email`,`OTP`,`Verified`,`Account_Type`,`Security_Question1`,`Q1_Answer`,`Security_Question2`,`Q2_Answer`) VALUES (?)";
+    const values = [
+        req.body.employeeId, 
+        req.body.username, 
+        req.body.passcode, 
+        req.body.email, 
+        "null", 
+        0, 
+        "null", 
+        "null", 
+        "null", 
+        "null", 
+        "null"
+    ];
+    connection.query(q, [values], (err, result, fields) => {
+        if (err) return res.json(err);
+        return res.json("Account created successfully!");
+    });
+});
+
 app.get("/loginData", (req, res) => {
     const q = "SELECT * FROM Login.Login;"; //retrieves every entry in login table
     connection.query(q, (err, result) => {
