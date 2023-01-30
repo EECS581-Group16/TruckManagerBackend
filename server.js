@@ -230,7 +230,7 @@ app.post("/invoices", (req, res) => {
     ];
     connection.query(q, [values], (err, result, fields) => {
         if (err) return res.json(err);
-        return res.json("Invoice created successfully!");
+        return res.json({created: true});
     });
 });
 
