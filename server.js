@@ -30,8 +30,8 @@ async function mail(email, otp) {
         host: 'smtp.gmail.com',
         secure: false,
         auth: {
-            user: process.env.OAUTH_USER,
-            pass: process.env.OAUTH_APP_PASSWORD,
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_APP_PASSWORD,
         },
     });
 
