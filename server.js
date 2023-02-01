@@ -27,13 +27,11 @@ const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,32}$/;
 async function mail(email, otp) {
     let transporter = nodemailer.createTransport({
         service: 'gmail',
+        host: 'smtp.gmail.com',
+        secure: false,
         auth: {
-            type: 'OAuth2',
             user: process.env.OAUTH_USER,
-            pass: process.env.OAUTH_PASS,
-            clientId: process.env.OAUTH_CLIENT_ID,
-            clientSecret: process.env.OAUTH_CLIENT_SECRET,
-            refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+            pass: process.env.OAUTH_APP_PASSWORD,
         },
     });
 
