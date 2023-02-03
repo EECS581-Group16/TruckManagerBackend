@@ -13,12 +13,34 @@ require('dotenv').config(); //dotenv for use with npm, protects sensitive inform
 const express = require('express'); //node package used to create backend server and api.
 const nodemailer = require('nodemailer'); //node package used for sending emails
 const cors = require('cors'); //needed to prevent cors error
+const crypto = require('crypto');
+const bcrypt = require("bcryptjs"); //used for hashing and encrypting data
+
+const SALT = 10; //salt for hashing
+const ALGORITHM = "aes-256-cbc"; //algorithm for encryption
+const inVecString = [0x9f, 0x32, 0x11, 0xc9, 0x44, 0x3c, 0x5a, 0x34, 0x08, 0xac, 0x0e, 0x6d, 0xcc, 0xb7, 0x5a, 0x83];
+const secKeyString = [0x40 ,0xda ,0x60 ,0x0b ,0xde ,0x7c ,0x4c ,0xb0 ,0x45 ,0x81 ,0xbe ,0x6e ,0xdf ,0x4b ,0x4b ,0xb4 ,0x63 ,0xe9 ,0xd6 ,0x1f ,0x35 ,0xcc ,0x76 ,0x0c ,0xc8 ,0xa5 ,0xb7 ,0x62 ,0x35 ,0xcf ,0xd2 ,0x37];
+const INVEC = Buffer.from(inVecString, 'utf-8');
+const SECKEY = Buffer.from(secKeyString, 'utf-8');
 
 /*-------------------------------------------------------------------
     Constants
 -------------------------------------------------------------------*/
 const app = express(); //creates the app express.js object which handles requests
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,32}$/;
+
+/*-------------------------------------------------------------------
+    Database connection
+
+    Connects to mysql using protected credentials stored in
+    .env file
+-------------------------------------------------------------------*/
+const connection = mysql.createConnection({
+    host: process.env.RDS_HOSTNAME,
+    user: process.env.RDS_USERNAME,
+    password: process.env.RDS_PASSWORD,
+    port: process.env.RDS_PORT 
+});
 
 /*-------------------------------------------------------------------
     Functions
@@ -48,6 +70,25 @@ async function mail(email, otp) {
             console.log("Email Sent!");
         }
     });
+}
+
+/*
+-Author: Mason Otto
+-Last Modified: 2/1/2023
+-Description: This will check the database to make sure that we are not registering a user that already exists.
+-Returns: JSON response - status of duplicate user or not
+-TODO: everything
+*/
+async function validateNewUser(user) {
+    const username = user;
+    const q = `SELECT Username FROM Login.Login WHERE Username = "${username}" `;
+    connection.query(q, (err, result) => {
+        if (err) return res.json(err);
+        if(result[0]) {
+            return false;
+        }
+        return true;
+    })
 }
 
 /*-------------------------------------------------------------------
@@ -87,19 +128,6 @@ app.use(cors({
 }));
 
 /*-------------------------------------------------------------------
-    Database connection
-
-    Connects to mysql using protected credentials stored in
-    .env file
--------------------------------------------------------------------*/
-const connection = mysql.createConnection({
-    host: process.env.RDS_HOSTNAME,
-    user: process.env.RDS_USERNAME,
-    password: process.env.RDS_PASSWORD,
-    port: process.env.RDS_PORT 
-});
-
-/*-------------------------------------------------------------------
     Backend Endpoints
 
     These include GET, POST, PUT, etc... requests that send
@@ -137,7 +165,7 @@ app.get("/validusername/:username", (req, res) => {
 
 /*
 -Author: Mason Otto
--Last Modified: 1/23/2023
+-Last Modified: 2/1/2023 -Mason Otto
 -Description: This will set an OTP in the SQL database for the user that requested
     it. Then it will send that OTP to the email that user has stored in 
     the database.
@@ -154,8 +182,12 @@ app.put("/requestotp", (req, res) => {
         connection.query(q, (err, result) => {
             if(err) return res.json(err);
             if(result[0]) {
-                mail(result[0].Email, OTP);
-                return res.json({response: "EMAIL SENT", email: result[0].Email});
+                const decipherText = crypto.createDecipheriv(ALGORITHM, SECKEY, INVEC);
+                let decryptedEmail = decipherText.update(result[0].Email, "hex", "utf-8");
+                decryptedEmail += decipherText.final("utf8");
+                console.log(decryptedEmail);
+                mail(decryptedEmail, OTP);
+                return res.json({response: "EMAIL SENT", email: decryptedEmail});
             }
             else {
                 return res.json({response: "EMAIL FAILED"});
@@ -234,19 +266,29 @@ app.post("/invoices", (req, res) => {
 
 /*
 -Author: Ryan Penrod
--Last Modified: 1/30/2023
+-Last Modified: 2/1/2023 - Mason Otto
 -Description: This create a new row on the Login table
     for a user given the information they provided
 -Returns: JSON response - status account creation
 -TODO: Consider all fields
 */
-app.post("/register", (req, res) => {
+app.post("/register", async (req, res) => {
+
+    //The following statement will hash the passcode
+    const hashedPassword = await bcrypt.hash(req.body.passcode, SALT);
+    
+    //The following will encrypt the email
+    const cipherText = crypto.createCipheriv(ALGORITHM, SECKEY, INVEC);
+    let encryptedEmail = cipherText.update(req.body.email, "utf-8", "hex");
+    encryptedEmail += cipherText.final("hex");
+
+
     const q = "INSERT INTO Login.Login (`Employee_ID`,`Username`,`Passcode`,`Email`,`OTP`,`Verified`,`Account_Type`,`Security_Question1`,`Q1_Answer`,`Security_Question2`,`Q2_Answer`) VALUES (?)";
     const values = [
         req.body.employeeId, 
         req.body.username, 
-        req.body.passcode, 
-        req.body.email, 
+        hashedPassword, 
+        encryptedEmail, 
         "null", 
         0, 
         "null", 
@@ -276,14 +318,15 @@ app.get("/loginData", (req, res) => {
 //if neither match it returns json with data of 'invalid credentials' and accepted: false
 //if users become large it will probably be more efficient to query the username and password and check if it was successful or not
 //instead of pulling every user and password from the databae.
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
+    const hashedPassword = await bcrypt.hash(req.body.password, SALT);
     const q = "SELECT Username, Passcode FROM Login.Login";
     connection.query(q, (err, result) => {
         if (err) return res.json(err);
         const data = result
         for(let i = 0; i < data.length; i++) {
             if(data[i].Username === req.body.username) {
-                if(data[i].Passcode === req.body.password) {
+                if(bcrypt.compare(data[i].Passcode, hashedPassword)) {
                     return res.json({response: 'valid credentials', accepted: true});
                 }
             }
