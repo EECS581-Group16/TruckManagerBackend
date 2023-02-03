@@ -166,6 +166,7 @@ app.get("/validusername/:username", (req, res) => {
 /*
 -Author: Mason Otto
 -Last Modified: 2/1/2023 -Mason Otto
+-Recent Modifications: Added email decryption
 -Description: This will set an OTP in the SQL database for the user that requested
     it. Then it will send that OTP to the email that user has stored in 
     the database.
@@ -267,6 +268,7 @@ app.post("/invoices", (req, res) => {
 /*
 -Author: Ryan Penrod
 -Last Modified: 2/1/2023 - Mason Otto
+Recent Modifications: Added password hashing and email encryption
 -Description: This create a new row on the Login table
     for a user given the information they provided
 -Returns: JSON response - status account creation
