@@ -16,6 +16,10 @@ const cors = require('cors'); //needed to prevent cors error
 const crypto = require('crypto');
 const bcrypt = require("bcryptjs"); //used for hashing and encrypting data
 
+const passport = require("passport");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+
 const SALT = 10; //salt for hashing
 const ALGORITHM = "aes-256-cbc"; //algorithm for encryption
 const inVecString = [0x9f, 0x32, 0x11, 0xc9, 0x44, 0x3c, 0x5a, 0x34, 0x08, 0xac, 0x0e, 0x6d, 0xcc, 0xb7, 0x5a, 0x83];
@@ -114,6 +118,7 @@ async function validateNewUser(user) {
     the variable username.
 -------------------------------------------------------------------*/
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); //need this for auth
 
 /*-------------------------------------------------------------------
     Configure CORS (Cross-Origin Resource Sharing)
@@ -126,6 +131,17 @@ app.use(express.json());
 app.use(cors({
     origin: '*' //temporary for development, this will eventually be the server where our app is hosted
 }));
+
+//need this for auth
+// app.use(session({
+//     secret: process.env.SECRET,
+//     resave: true,
+//     saveUninitialized: true,
+// }));
+// app.use(cookieParser(process.env.SECRET));
+// app.use(passport.initialize());
+// app.use(passport.session());
+// require('./passportConfig')(passport);
 
 /*-------------------------------------------------------------------
     Backend Endpoints
@@ -273,6 +289,7 @@ Recent Modifications: Added password hashing and email encryption
     for a user given the information they provided
 -Returns: JSON response - status account creation
 -TODO: Consider all fields
+       Need to set up error handling for if a uuid is already in the database. -MO
 */
 app.post("/register", async (req, res) => {
 
@@ -284,9 +301,12 @@ app.post("/register", async (req, res) => {
     let encryptedEmail = cipherText.update(req.body.email, "utf-8", "hex");
     encryptedEmail += cipherText.final("hex");
 
+    const uuid = crypto.randomUUID(); //this will generate a random 36 character long UUID
 
-    const q = "INSERT INTO Login.Login (`Employee_ID`,`Username`,`Passcode`,`Email`,`OTP`,`Verified`,`Account_Type`,`Security_Question1`,`Q1_Answer`,`Security_Question2`,`Q2_Answer`) VALUES (?)";
+
+    const q = "INSERT INTO Login.Login (`id`,`Employee_ID`,`Username`,`Passcode`,`Email`,`OTP`,`Verified`,`Account_Type`,`Security_Question1`,`Q1_Answer`,`Security_Question2`,`Q2_Answer`) VALUES (?)";
     const values = [
+        uuid,
         req.body.employeeId, 
         req.body.username, 
         hashedPassword, 
@@ -300,8 +320,10 @@ app.post("/register", async (req, res) => {
         "null"
     ];
     connection.query(q, [values], (err, result, fields) => {
-        if (err) return res.json(err);
-        return res.json("Account created successfully!");
+        if (err) {
+            return res.json({message: "FAILED"});
+        }
+        return res.json({message: "CREATED"});
     });
 });
 
@@ -348,6 +370,15 @@ app.post("/logintest", (req, res) => {
         return res.json("User created successfully!");
     });
 });
+
+
+//-----------------------------------------------------------------------
+app.get("/user", (req, res) => {
+    res.send(req.user); // The req.user stores the entire user that has been authenticated inside of it.
+    //console.log(req.user);
+});
+//------------------------------------------------------------------------
+
 
 /*-------------------------------------------------------------------
     Start server 
