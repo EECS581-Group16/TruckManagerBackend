@@ -12,63 +12,68 @@ const connection = mysql.createConnection({
   port: process.env.RDS_PORT 
 });
 
-//Function to find a user in database
-async function findUser(username) {
-  return new Promise((resolve, reject) => {
-    const q = `SELECT Username, Passcode, id FROM Login.Login WHERE Username = "${username}" `;
-    connection.query(q, (err, result) => {
-        if (err) reject(new Error('fail'));
-        if(result[0]) {
-          resolve({username: result[0].Username, password: result[0].Passcode, id: result[0].id});
-        }
-        reject(new Error('invalid'));
-    });
-  });
-}
-async function findId(id) {
-  return new Promise((resolve, reject) => {
-    const q = `SELECT Username, id FROM Login.Login WHERE id = "${id}" `;
-    connection.query(q, (err, result) => {
-        if (err) reject(new Error('fail'));
-        if(result[0]) resolve({username: result[0].Username, id: result[0].id});
-        reject(new Error('invalid'));
-    });
-  });
-}
-
-module.exports = function (passport) {
-  passport.use(
+module.exports = function(passport) {
+  passport.use("local",
     new localStrategy((username, password, done) => {
-      findUser(username).then(async (user) => {
-          await bcrypt.compare(password, user.password, (err, result) => {
-            if (err) throw err;
-            if (result === true) {
-              return done(null, user);
-            } else {
-              return done(null, false);
-            }
-          });
-      }).catch((err) => {
-        if (err) throw err;
-        return done(null, false)
+      connection.query(`SELECT Username, Passcode, id FROM Login.Login WHERE Username = "${username}"`, (error, results, fields) => {
+        if (error) return done(error);
+        if (results.length===0) return done(null, false);
+        const isValid = bcrypt.compare(password, results[0].Passcode);
+        user = {username: results[0].Username, id: results[0].id}
+        if (isValid) {
+          //console.log('VALID');
+          return done(null, user);
+        }
+        else {
+          return done(null, false)
+        }
       });
     })
   );
 
-  passport.serializeUser((user, cb) => {
-    cb(null, user.id);
+
+// module.exports = function (passport) {
+//   passport.use(
+//     new localStrategy((username, password, done) => {
+//       findUser(username).then(async (user) => {
+//           await bcrypt.compare(password, user.password, (err, result) => {
+//             if (err) throw err;
+//             if (result === true) {
+//               return done(null, user);
+//             } else {
+//               return done(null, false);
+//             }
+//           });
+//       }).catch((err) => {
+//         if (err) throw err;
+//         return done(null, false)
+//       });
+//     })
+//   );
+
+  passport.serializeUser((user, done) => {
+    //console.log('serializing user');
+    done(null, user.id);
   });
-  passport.deserializeUser((id, cb) => {
-    console.log('here');
-    findId(id).then((user) => {
+  passport.deserializeUser((id, done) => {
+    //console.log('deserializing user');
+    connection.query(`SELECT Username, id FROM Login.Login WHERE id = "${id}"`, (error, results) => {
       const userInformation = {
-        username: user.username,
-        id: user.id
+        username: results[0].Username,
+        id: results[0].id
       }
-      console.log('User Information', userInformation);
-      cb(null, userInformation)
-    }).catch((err) => {
-      cb(err, null);
+      //console.log(userInformation)
+      done(null, userInformation);
     });
+    // findId(id).then((user) => {
+    //   const userInformation = {
+    //     username: user.username,
+    //     id: user.id
+    //   }
+      // console.log('User Information', userInformation);
+      // cb(null, userInformation)
+    // }).catch((err) => {
+    //   cb(err, null);
+    // });
   });
 };

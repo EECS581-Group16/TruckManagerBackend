@@ -16,6 +16,7 @@ const cors = require('cors'); //needed to prevent cors error
 const crypto = require('crypto');
 const bcrypt = require("bcryptjs"); //used for hashing and encrypting data
 
+const passportLocal = require("passport-local").Strategy;
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
@@ -32,6 +33,55 @@ const SECKEY = Buffer.from(secKeyString, 'utf-8');
 -------------------------------------------------------------------*/
 const app = express(); //creates the app express.js object which handles requests
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,32}$/;
+
+/*-------------------------------------------------------------------
+    Configure Express.js
+
+    Express.js handles GET, POST, PUT, etc... requests to the
+    backend, and does so through the app object via the corresponding
+    methods. When making a request through the app object, you
+    include a callback function with a request and response object.
+    The request object includes any data that the user provides which
+    may be relevant to a query. The response object handles the response
+    which is returned to the client, which in our case is usually parsed
+    JSON data which can be used as a javascript object.
+
+    Ex:
+    
+    app.post("/", (req, res) => {
+        const username = req.body.username;
+    });
+
+    This would handle a post request to the "/" or base directory
+    and would assign username information provided by the user to
+    the variable username.
+-------------------------------------------------------------------*/
+app.use(express.json());
+app.use(express.urlencoded({ extended: true })); //need this for auth
+
+/*-------------------------------------------------------------------
+    Configure CORS (Cross-Origin Resource Sharing)
+
+    This is middleware for Express.js, it determines what origin's
+    to accept requests from by setting the Access-Control-Allow-Origin
+    header in the response. This is currently set to "*" for
+    purposes of development, to allow requests from any origin.
+-------------------------------------------------------------------*/
+app.use(cors({
+    credentials: true,
+    origin: 'http://127.0.0.1:5173' //temporary for development, this will eventually be the server where our app is hosted
+}));
+
+//need this for auth
+app.use(session({
+    secret: process.env.SECRET,
+    resave: true,
+    saveUninitialized: true,
+}));
+app.use(cookieParser(process.env.SECRET));
+app.use(passport.initialize());
+app.use(passport.session());
+require('./passportConfig')(passport);
 
 /*-------------------------------------------------------------------
     Database connection
@@ -94,55 +144,6 @@ async function validateNewUser(user) {
         return true;
     })
 }
-
-/*-------------------------------------------------------------------
-    Configure Express.js
-
-    Express.js handles GET, POST, PUT, etc... requests to the
-    backend, and does so through the app object via the corresponding
-    methods. When making a request through the app object, you
-    include a callback function with a request and response object.
-    The request object includes any data that the user provides which
-    may be relevant to a query. The response object handles the response
-    which is returned to the client, which in our case is usually parsed
-    JSON data which can be used as a javascript object.
-
-    Ex:
-    
-    app.post("/", (req, res) => {
-        const username = req.body.username;
-    });
-
-    This would handle a post request to the "/" or base directory
-    and would assign username information provided by the user to
-    the variable username.
--------------------------------------------------------------------*/
-app.use(express.json());
-app.use(express.urlencoded({ extended: true })); //need this for auth
-
-/*-------------------------------------------------------------------
-    Configure CORS (Cross-Origin Resource Sharing)
-
-    This is middleware for Express.js, it determines what origin's
-    to accept requests from by setting the Access-Control-Allow-Origin
-    header in the response. This is currently set to "*" for
-    purposes of development, to allow requests from any origin.
--------------------------------------------------------------------*/
-app.use(cors({
-    credentials: true,
-    origin: 'http://127.0.0.1:5173' //temporary for development, this will eventually be the server where our app is hosted
-}));
-
-//need this for auth
-app.use(session({
-    secret: process.env.SECRET,
-    resave: true,
-    saveUninitialized: true,
-}));
-app.use(cookieParser(process.env.SECRET));
-app.use(passport.initialize());
-app.use(passport.session());
-require('./passportConfig')(passport);
 
 /*-------------------------------------------------------------------
     Backend Endpoints
@@ -362,10 +363,11 @@ app.post("/login", (req, res, next) => {
         if (err) throw err;
         if (!user) res.json({response: 'invalid credentials', accepted: false});
         else {
-          req.logIn(user, (err) => {
+          req.login(user, (err) => {
             if (err) throw err;
             res.json({response: 'valid credentials', accepted: true, id: req.user.id});
-          });
+            //console.log(req.user);
+        });
         }
       })(req, res, next);
 });
@@ -386,7 +388,7 @@ app.post("/logintest", (req, res) => {
 //-----------------------------------------------------------------------
 app.get("/user", (req, res) => {
     res.send(req.user); // The req.user stores the entire user that has been authenticated inside of it.
-    //console.log(req.user);
+    console.log(req.user);
 });
 //------------------------------------------------------------------------
 
