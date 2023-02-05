@@ -21,7 +21,6 @@ module.exports = function(passport) {
         const isValid = bcrypt.compare(password, results[0].Passcode);
         user = {username: results[0].Username, id: results[0].id}
         if (isValid) {
-          //console.log('VALID');
           return done(null, user);
         }
         else {
@@ -31,49 +30,16 @@ module.exports = function(passport) {
     })
   );
 
-
-// module.exports = function (passport) {
-//   passport.use(
-//     new localStrategy((username, password, done) => {
-//       findUser(username).then(async (user) => {
-//           await bcrypt.compare(password, user.password, (err, result) => {
-//             if (err) throw err;
-//             if (result === true) {
-//               return done(null, user);
-//             } else {
-//               return done(null, false);
-//             }
-//           });
-//       }).catch((err) => {
-//         if (err) throw err;
-//         return done(null, false)
-//       });
-//     })
-//   );
-
   passport.serializeUser((user, done) => {
-    //console.log('serializing user');
     done(null, user.id);
   });
   passport.deserializeUser((id, done) => {
-    //console.log('deserializing user');
     connection.query(`SELECT Username, id FROM Login.Login WHERE id = "${id}"`, (error, results) => {
       const userInformation = {
         username: results[0].Username,
         id: results[0].id
       }
-      //console.log(userInformation)
       done(null, userInformation);
     });
-    // findId(id).then((user) => {
-    //   const userInformation = {
-    //     username: user.username,
-    //     id: user.id
-    //   }
-      // console.log('User Information', userInformation);
-      // cb(null, userInformation)
-    // }).catch((err) => {
-    //   cb(err, null);
-    // });
   });
 };

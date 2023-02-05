@@ -345,20 +345,6 @@ app.get("/loginData", (req, res) => {
 //if users become large it will probably be more efficient to query the username and password and check if it was successful or not
 //instead of pulling every user and password from the databae.
 app.post("/login", (req, res, next) => {
-    // const hashedPassword = await bcrypt.hash(req.body.password, SALT);
-    // const q = "SELECT Username, Passcode FROM Login.Login";
-    // connection.query(q, (err, result) => {
-    //     if (err) return res.json(err);
-    //     const data = result
-    //     for(let i = 0; i < data.length; i++) {
-    //         if(data[i].Username === req.body.username) {
-    //             if(bcrypt.compare(data[i].Passcode, hashedPassword)) {
-    //                 return res.json({response: 'valid credentials', accepted: true});
-    //             }
-    //         }
-    //     }
-    //     return res.json({response: 'invalid credentials', accepted: false});
-    // });
     passport.authenticate("local", (err, user, info) => {
         if (err) throw err;
         if (!user) res.json({response: 'invalid credentials', accepted: false});
@@ -366,7 +352,6 @@ app.post("/login", (req, res, next) => {
           req.login(user, (err) => {
             if (err) throw err;
             res.json({response: 'valid credentials', accepted: true, id: req.user.id});
-            //console.log(req.user);
         });
         }
       })(req, res, next);
