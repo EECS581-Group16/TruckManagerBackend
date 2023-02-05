@@ -129,19 +129,20 @@ app.use(express.urlencoded({ extended: true })); //need this for auth
     purposes of development, to allow requests from any origin.
 -------------------------------------------------------------------*/
 app.use(cors({
-    origin: '*' //temporary for development, this will eventually be the server where our app is hosted
+    credentials: true,
+    origin: 'http://127.0.0.1:5173' //temporary for development, this will eventually be the server where our app is hosted
 }));
 
 //need this for auth
-// app.use(session({
-//     secret: process.env.SECRET,
-//     resave: true,
-//     saveUninitialized: true,
-// }));
-// app.use(cookieParser(process.env.SECRET));
-// app.use(passport.initialize());
-// app.use(passport.session());
-// require('./passportConfig')(passport);
+app.use(session({
+    secret: process.env.SECRET,
+    resave: true,
+    saveUninitialized: true,
+}));
+app.use(cookieParser(process.env.SECRET));
+app.use(passport.initialize());
+app.use(passport.session());
+require('./passportConfig')(passport);
 
 /*-------------------------------------------------------------------
     Backend Endpoints
@@ -342,21 +343,31 @@ app.get("/loginData", (req, res) => {
 //if neither match it returns json with data of 'invalid credentials' and accepted: false
 //if users become large it will probably be more efficient to query the username and password and check if it was successful or not
 //instead of pulling every user and password from the databae.
-app.post("/login", async (req, res) => {
-    const hashedPassword = await bcrypt.hash(req.body.password, SALT);
-    const q = "SELECT Username, Passcode FROM Login.Login";
-    connection.query(q, (err, result) => {
-        if (err) return res.json(err);
-        const data = result
-        for(let i = 0; i < data.length; i++) {
-            if(data[i].Username === req.body.username) {
-                if(bcrypt.compare(data[i].Passcode, hashedPassword)) {
-                    return res.json({response: 'valid credentials', accepted: true});
-                }
-            }
+app.post("/login", (req, res, next) => {
+    // const hashedPassword = await bcrypt.hash(req.body.password, SALT);
+    // const q = "SELECT Username, Passcode FROM Login.Login";
+    // connection.query(q, (err, result) => {
+    //     if (err) return res.json(err);
+    //     const data = result
+    //     for(let i = 0; i < data.length; i++) {
+    //         if(data[i].Username === req.body.username) {
+    //             if(bcrypt.compare(data[i].Passcode, hashedPassword)) {
+    //                 return res.json({response: 'valid credentials', accepted: true});
+    //             }
+    //         }
+    //     }
+    //     return res.json({response: 'invalid credentials', accepted: false});
+    // });
+    passport.authenticate("local", (err, user, info) => {
+        if (err) throw err;
+        if (!user) res.json({response: 'invalid credentials', accepted: false});
+        else {
+          req.logIn(user, (err) => {
+            if (err) throw err;
+            res.json({response: 'valid credentials', accepted: true, id: req.user.id});
+          });
         }
-        return res.json({response: 'invalid credentials', accepted: false});
-    });
+      })(req, res, next);
 });
 
 //creates new row in Login table
