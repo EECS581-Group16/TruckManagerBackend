@@ -307,7 +307,7 @@ app.post("/register", async (req, res) => {
     const uuid = crypto.randomUUID(); //this will generate a random 36 character long UUID
 
 
-    const q = "INSERT INTO Login.Login (`id`,`Employee_ID`,`Username`,`Passcode`,`Email`,`OTP`,`Verified`,`Account_Type`,`Security_Question1`,`Q1_Answer`,`Security_Question2`,`Q2_Answer`) VALUES (?)";
+    const q = "INSERT INTO Login.Login (`id`,`Employee_ID`,`Username`,`Passcode`,`Email`,`OTP`,`Verified`,`Account_Type`) VALUES (?)";
     const values = [
         uuid,
         req.body.employeeId, 
@@ -316,11 +316,7 @@ app.post("/register", async (req, res) => {
         encryptedEmail, 
         "null", 
         0, 
-        "null", 
-        "null", 
-        "null", 
-        "null", 
-        "null"
+        "null",
     ];
     connection.query(q, [values], (err, result, fields) => {
         if (err) {
@@ -381,7 +377,7 @@ app.post("/logintest", (req, res) => {
 */
 app.get("/user", (req, res) => {
     res.send(req.user); // The req.user stores the entire user that has been authenticated inside of it.
-    //console.log(req.user);
+    console.log(req.user);
 });
 
 
