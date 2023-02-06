@@ -1,6 +1,7 @@
 /*
 -Author: Mason Otto
 -Name: server.js
+-Last Modified: 2/6/2023
 -Description: This is the backend API that includes all of the endpoints for communication
     between the front end and database.
 */
@@ -72,7 +73,7 @@ app.use(cors({
     origin: 'http://127.0.0.1:5173' //temporary for development, this will eventually be the server where our app is hosted
 }));
 
-//need this for auth
+//the following 9 lines of code are used to create an express session and authenticate with passport
 app.use(session({
     secret: process.env.SECRET,
     resave: true,
@@ -286,7 +287,7 @@ app.post("/invoices", (req, res) => {
 /*
 -Author: Ryan Penrod
 -Last Modified: 2/1/2023 - Mason Otto
-Recent Modifications: Added password hashing and email encryption
+Recent Modifications: Added password hashing, email encryption, and UUID generation
 -Description: This create a new row on the Login table
     for a user given the information they provided
 -Returns: JSON response - status account creation
@@ -337,13 +338,15 @@ app.get("/loginData", (req, res) => {
     });
 });
 
-//this is beginning of testing for correct username and password.
-//this loops through the data returned from the database for a valid username
-//if given valid username it checks for valid password.
-//if there is a match it will return an json with response and accepted: true
-//if neither match it returns json with data of 'invalid credentials' and accepted: false
-//if users become large it will probably be more efficient to query the username and password and check if it was successful or not
-//instead of pulling every user and password from the databae.
+/*
+-Author: Mason Otto
+-Last Modified: 2/5/2023 - Mason Otto
+Recent Modifications: Added passport functionality to verifying login
+-Description: Endpoint for login, this takes a username and password and will authenticate that user,
+    a cookie is stored in the browser for future authentication with passport
+-Returns: JSON with a response message, accepted, and id of useer authenticated
+-TODO: test further for error handling
+*/
 app.post("/login", (req, res, next) => {
     passport.authenticate("local", (err, user, info) => {
         if (err) throw err;
@@ -369,13 +372,17 @@ app.post("/logintest", (req, res) => {
     });
 });
 
-
-//-----------------------------------------------------------------------
+/*
+-Author: Mason Otto
+-Last Modified: 2/5/2023 - Mason Otto
+-Description: This returns the user that made the request
+-Returns: user 
+-TODO: 
+*/
 app.get("/user", (req, res) => {
     res.send(req.user); // The req.user stores the entire user that has been authenticated inside of it.
-    console.log(req.user);
+    //console.log(req.user);
 });
-//------------------------------------------------------------------------
 
 
 /*-------------------------------------------------------------------
