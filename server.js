@@ -159,6 +159,9 @@ app.get("/", (req, res) => {
 
 //returns all invoices tables
 app.get("/invoices", (req, res) => {
+    if(!req.isAuthenticated()) {
+        return res.json({authenticated: false});
+    }
     const q = "SELECT * FROM accounting.load_tickets_test";
     //const q = "SELECT * FROM accounting.load_tickets";
     connection.query(q, (err, result) => {
@@ -263,6 +266,9 @@ app.put("/forgotpassword", (req, res) => {
 //posts new data into database
 //TODO: figure out what to do with "null" values
 app.post("/invoices", (req, res) => {
+    if(!req.isAuthenticated()) {
+        return res.json({authenticated: false})
+    } 
     const q = "INSERT INTO accounting.load_tickets_test (`ticket_number`,`customer`,`date`,`description`,`order`,`job`,`driver_id`,`truck_number`,`hours`,`tons`,`rate`,`driver_rate`) VALUES (?)";
     const values = [
         req.body.ticketNum, 
@@ -280,7 +286,7 @@ app.post("/invoices", (req, res) => {
     ];
     connection.query(q, [values], (err, result, fields) => {
         if (err) return res.json(err);
-        return res.json({created: true});
+        return res.json({created: true, authenticated: true});
     });
 });
 
@@ -376,8 +382,9 @@ app.post("/logintest", (req, res) => {
 -TODO: 
 */
 app.get("/user", (req, res) => {
-    res.send(req.user); // The req.user stores the entire user that has been authenticated inside of it.
-    console.log(req.user);
+    res.json({user: req.user, authenticated: req.isAuthenticated()}); // The req.user stores the entire user that has been authenticated inside of it.
+    console.log('User', req.user);
+    console.log('Authenticated', req.isAuthenticated());
 });
 
 
