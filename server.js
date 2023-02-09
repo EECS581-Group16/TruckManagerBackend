@@ -345,6 +345,29 @@ app.post("/newemployee", (req, res) => {
 })
 
 /*
+    Author: Mason Otto
+    Created: 2/9/2023
+    Last Modified: 2/9/2023
+    Description: This is where users will be able update their info for their user profile
+*/
+app.put("/updateuser", (req, res) => {
+    const state = req.body.state;
+    const city = req.body.city;
+    const street = req.body.street;
+    const zipcode = req.body.zipcode;
+    const phone = req.body.phone;
+
+    const q = `UPDATE UserData.UserData SET State = "${state}", City = "${city}", Street = "${street}", Zipcode = "${zipcode}", Phone ="${phone}", New = "false"`
+    connection.query(q, (err, result, fields) => {
+        if (err) {
+            console.log(err);
+            return res.json({message: "FAILED"});
+        }
+        return res.json({message: "UPDATED"});
+    })
+})
+
+/*
 -Author: Ryan Penrod
 
 <--- MODIFICATIONS --->
