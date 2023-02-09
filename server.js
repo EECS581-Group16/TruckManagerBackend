@@ -70,7 +70,7 @@ app.use(express.urlencoded({ extended: true })); //need this for auth
 -------------------------------------------------------------------*/
 app.use(cors({
     credentials: true,
-    origin: 'http://127.0.0.1:5173' //temporary for development, this will eventually be the server where our app is hosted
+    origin: ['http://127.0.0.1:5173', 'http://localhost:5173'], //temporary for development, this will eventually be the server where our app is hosted
 }));
 
 //the following 9 lines of code are used to create an express session and authenticate with passport
