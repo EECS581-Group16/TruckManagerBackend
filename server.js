@@ -349,7 +349,7 @@ app.post("/newemployee", (req, res) => {
 -TODO: Consider all fields
        Need to set up error handling for if a uuid is already in the database. -MO
 */
-app.post("/register", async (req, res) => {
+app.put("/register", async (req, res) => {
     //checks to make sure email is proper format
     if (!emailRegex.test(req.body.email)) {
         return res.json({message: "email"});
@@ -367,25 +367,8 @@ app.post("/register", async (req, res) => {
     let encryptedEmail = cipherText.update(req.body.email, "utf-8", "hex");
     encryptedEmail += cipherText.final("hex");
 
-    const uuid = crypto.randomUUID(); //this will generate a random 36 character long UUID
-
-    console.log(req.body.firstName);
-    console.log(req.body.lastName);
-    
-    const q = "INSERT INTO Login.Login (`id`,`Employee_ID`,`Username`,`Passcode`,`Email`,`Firstname`,`Lastname`,`OTP`,`Verified`,`Account_Type`) VALUES (?)";
-    const values = [
-        uuid,
-        req.body.employeeId,
-        req.body.username,
-        hashedPassword,
-        encryptedEmail,
-        req.body.firstName,
-        req.body.lastName,
-        "null",
-        0,
-        "null",
-    ];
-    connection.query(q, [values], (err, result, fields) => {
+    const q = `UPDATE Login.Login SET Passcode = "${hashedPassword}", Email = "${encryptedEmail}" WHERE Employee_ID = "${req.body.employeeId}"`
+    connection.query(q, (err, result, fields) => {
         if (err) {
             console.log(err);
             return res.json({message: "FAILED"});
