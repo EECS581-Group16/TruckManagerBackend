@@ -292,11 +292,18 @@ app.post("/invoices", (req, res) => {
 
 /*
 -Author: Ryan Penrod
--Last Modified: 2/1/2023 - Mason Otto
-Recent Modifications: Added password hashing, email encryption, and UUID generation
--Description: This create a new row on the Login table
-    for a user given the information they provided
--Returns: JSON response - status account creation
+
+<--- MODIFICATIONS --->
+    2/8/2023 - Ryan Penrod
+        Modifications: Updated to include first and last name after modifying table and
+            frontend
+
+    2/1/2023 - Mason Otto
+        Recent Modifications: Added password hashing, email encryption, and UUID generation
+        -Description: This create a new row on the Login table
+            for a user given the information they provided
+        -Returns: JSON response - status account creation
+
 -TODO: Consider all fields
        Need to set up error handling for if a uuid is already in the database. -MO
 */
@@ -312,20 +319,25 @@ app.post("/register", async (req, res) => {
 
     const uuid = crypto.randomUUID(); //this will generate a random 36 character long UUID
 
+    console.log(req.body.firstName);
+    console.log(req.body.lastName);
 
-    const q = "INSERT INTO Login.Login (`id`,`Employee_ID`,`Username`,`Passcode`,`Email`,`OTP`,`Verified`,`Account_Type`) VALUES (?)";
+    const q = "INSERT INTO Login.Login (`id`,`Employee_ID`,`Username`,`Passcode`,`Email`,`Firstname`,`Lastname`,`OTP`,`Verified`,`Account_Type`) VALUES (?)";
     const values = [
         uuid,
         req.body.employeeId,
         req.body.username,
         hashedPassword,
         encryptedEmail,
+        req.body.firstName,
+        req.body.lastName,
         "null",
         0,
         "null",
     ];
     connection.query(q, [values], (err, result, fields) => {
         if (err) {
+            console.log(err);
             return res.json({message: "FAILED"});
         }
         return res.json({message: "CREATED"});
