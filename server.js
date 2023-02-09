@@ -326,9 +326,21 @@ app.post("/newemployee", (req, res) => {
             console.log(err);
             return res.json({message: "FAILED"});
         }
+        const date = new Date();
+        const values = [
+            uuid,
+            employeeId,
+            date,
+        ]
+        const q2 = "INSERT INTO UserData.UserData (`id`, `Employee_ID`, `Creation_Date`) VALUES (?)";
+        connection.query(q2, [values], (err, result, fields) => {
+            if (err) {
+                console.log(err);
+                return res.json({message: "FAILED"});
+            }
+        });
         return res.json({message: "CREATED", username: username, employeeId: employeeId, firstName: firstName, lastName: lastName});
     });
-
 
 })
 
