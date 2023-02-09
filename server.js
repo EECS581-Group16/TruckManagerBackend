@@ -34,6 +34,7 @@ const SECKEY = Buffer.from(secKeyString, 'utf-8');
 -------------------------------------------------------------------*/
 const app = express(); //creates the app express.js object which handles requests
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,32}$/;
+const emailRegex = /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/;
 
 /*-------------------------------------------------------------------
     Configure Express.js
@@ -298,8 +299,8 @@ app.post("/invoices", (req, res) => {
         Modifications: Updated to include first and last name after modifying table and
             frontend
 
-    2/1/2023 - Mason Otto
-        Recent Modifications: Added password hashing, email encryption, and UUID generation
+    2/9/2023 - Mason Otto
+        Recent Modifications: added regex for email and password format
         -Description: This create a new row on the Login table
             for a user given the information they provided
         -Returns: JSON response - status account creation
@@ -308,6 +309,14 @@ app.post("/invoices", (req, res) => {
        Need to set up error handling for if a uuid is already in the database. -MO
 */
 app.post("/register", async (req, res) => {
+    //checks to make sure email is proper format
+    if (!emailRegex.test(req.body.email)) {
+        return res.json({message: "email"});
+    }
+    //checks to make sure password is proper format
+    if (!passwordRegex.test(req.body.passcode)) {
+        return res.json({message: "password"});
+    }
 
     //The following statement will hash the passcode
     const hashedPassword = await bcrypt.hash(req.body.passcode, SALT);
@@ -321,7 +330,7 @@ app.post("/register", async (req, res) => {
 
     console.log(req.body.firstName);
     console.log(req.body.lastName);
-
+    
     const q = "INSERT INTO Login.Login (`id`,`Employee_ID`,`Username`,`Passcode`,`Email`,`Firstname`,`Lastname`,`OTP`,`Verified`,`Account_Type`) VALUES (?)";
     const values = [
         uuid,
