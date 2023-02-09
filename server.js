@@ -292,6 +292,47 @@ app.post("/invoices", (req, res) => {
 });
 
 /*
+    Author: Mason Otto
+    Created: 2/9/2023
+    Last Modified: 2/9/2023
+    Description: This is where admin users will be able to add new employees
+*/
+app.post("/newemployee", (req, res) => {
+    const uuid = crypto.randomUUID(); //this will generate a random 36 character long UUID
+    
+    const id = uuid;
+    const employeeId = req.body.employeeId;
+    const firstName = req.body.firstName;
+    const lastName  = req.body.lastName;
+    const accountType = req.body.accountType;
+    //username for John Smith should generate to be something like, jsmith23
+    const username = (firstName[0] + lastName).toLowerCase() + Math.floor(Math.random().toFixed(2)*100);
+
+    const q = "INSERT INTO Login.Login (`id`,`Employee_ID`,`Username`,`Passcode`,`Email`,`Firstname`,`Lastname`,`OTP`,`Verified`,`Account_Type`) VALUES (?)";
+    const values = [
+        uuid,
+        employeeId,
+        username,
+        null,
+        null,
+        firstName,
+        lastName,
+        "null",
+        0,
+        accountType,
+    ];
+    connection.query(q, [values], (err, result, fields) => {
+        if (err) {
+            console.log(err);
+            return res.json({message: "FAILED"});
+        }
+        return res.json({message: "CREATED", username: username, employeeId: employeeId, firstName: firstName, lastName: lastName});
+    });
+
+
+})
+
+/*
 -Author: Ryan Penrod
 
 <--- MODIFICATIONS --->
