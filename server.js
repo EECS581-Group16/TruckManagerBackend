@@ -152,10 +152,10 @@ app.get("/invoices", (req, res) => {
     });
 });
 
-//this endpoint will check if a given username is present in the database
-app.get("/validusername/:username", (req, res) => {
-    const username = req.params.username;
-    const q = `SELECT Username FROM Login.Login WHERE Username = "${username}" `;
+//this endpoint will check if a given employeeId is present in the database
+app.get("/validemployeeid/:employeeid", (req, res) => {
+    const employeeId = req.params.employeeid;
+    const q = `SELECT Employee_ID FROM Login.Login WHERE Employee_ID = "${employeeId}" `;
     connection.query(q, (err, result) => {
         if (err) return res.json(err);
         if(result[0]) {
@@ -178,10 +178,10 @@ app.get("/validusername/:username", (req, res) => {
 -TODO: Give OTP an expiration.
 */
 app.put("/requestotp", (req, res) => {
-    const username = req.body.username;
+    const employeeId = req.body.employeeId;
     const OTP = Math.floor(100000 + Math.random() * 900000);
-    const q = `SELECT Email FROM Login.Login WHERE Username = "${username}" `;
-    const q2 = `UPDATE Login.Login SET OTP = ${OTP} WHERE Username = "${username}"`;
+    const q = `SELECT Email FROM Login.Login WHERE Employee_ID = "${employeeId}" `;
+    const q2 = `UPDATE Login.Login SET OTP = ${OTP} WHERE Employee_ID = "${employeeId}"`;
     connection.query(q2, (err, result) => {
         if(err) return res.json(err);
         connection.query(q, (err, result) => {
@@ -205,15 +205,15 @@ app.put("/requestotp", (req, res) => {
 /*
 -Author: Mason Otto
 -Last Modified: 1/23/2023
--Description: This will take in the user input OTP and their username to verify if the OTP is correct.
+-Description: This will take in the user input OTP and their employeeId to verify if the OTP is correct.
     If correct then it will allow the user to update their password.
 -Returns: JSON response - status of OTP verification
 -TODO: Figure out some way to determine if OTP has expired.
 */
 app.put("/verifyotp", (req, res) => {
-    const username = req.body.username;
+    const employeeId = req.body.employeeId;
     const OTP = parseInt(req.body.otp);
-    const q = `SELECT OTP FROM Login.Login WHERE Username = "${username}"`;
+    const q = `SELECT OTP FROM Login.Login WHERE Employee_ID = "${employeeId}"`;
     connection.query(q, (err, result) => {
         if(err) return res.json(err);
         if(result[0]) {
@@ -230,15 +230,15 @@ app.put("/verifyotp", (req, res) => {
     });
 })
 
-//This will update the password in the database with the given username and new password
+//This will update the password in the database with the given employeeId and new password
 //NEED TO ENCRYPT PASSWORDS IN FUTURE
 app.put("/forgotpassword", (req, res) => {
-    const username = req.body.username;
+    const employeeId = req.body.employeeId;
     const newPassword = req.body.newPassword;
     if(!passwordRegex.test(newPassword)) {
         return res.json({response: false, errcode: 1}) //password does not meet requirements
     }
-    const q = `UPDATE Login.Login SET Passcode = "${newPassword}" WHERE Username = "${username}"`;
+    const q = `UPDATE Login.Login SET Passcode = "${newPassword}" WHERE Employee_ID = "${employeeId}"`;
     connection.query(q, (err, result) => {
         if (err) return res.json({response: false, errcode: 2}); //failed to update to database
         return res.json({response: true, errcode: 0}); //successful password change
@@ -405,7 +405,7 @@ app.get("/loginData", (req, res) => {
 -Author: Mason Otto
 -Last Modified: 2/5/2023 - Mason Otto
 Recent Modifications: Added passport functionality to verifying login
--Description: Endpoint for login, this takes a username and password and will authenticate that user,
+-Description: Endpoint for login, this takes an employeeId and password and will authenticate that user,
     a cookie is stored in the browser for future authentication with passport
 -Returns: JSON with a response message, accepted, and id of user authenticated
 -TODO: test further for error handling
