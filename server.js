@@ -426,17 +426,21 @@ app.get("/loginData", (req, res) => {
 Recent Modifications: Added passport functionality to verifying login
 -Description: Endpoint for login, this takes a username and password and will authenticate that user,
     a cookie is stored in the browser for future authentication with passport
--Returns: JSON with a response message, accepted, and id of useer authenticated
+-Returns: JSON with a response message, accepted, and id of user authenticated
 -TODO: test further for error handling
 */
 app.post("/login", (req, res, next) => {
     passport.authenticate("local", (err, user, info) => {
-        if (err) throw err;
-        if (!user) res.json({response: 'invalid credentials', accepted: false});
+        if (err){
+            throw err;
+        } 
+        if (!user){
+            res.json({response: 'invalid credentials', accepted: false});
+        }
         else {
           req.login(user, (err) => {
             if (err) throw err;
-            res.json({response: 'valid credentials', accepted: true, id: req.user.id});
+            res.json({response: 'valid credentials', accepted: true, id: req.user.Employee_ID});
         });
         }
       })(req, res, next);

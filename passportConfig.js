@@ -30,32 +30,34 @@ const connection = mysql.createConnection({
 */
 module.exports = function(passport) {
   passport.use("local",
-    new localStrategy((username, password, done) => {
-      connection.query(`SELECT Username, Passcode, id FROM Login.Login WHERE Username = "${username}"`, (error, results, fields) => {
-        if (error) return done(error);
-        if (results.length===0) return done(null, false);
-        const isValid = bcrypt.compare(password, results[0].Passcode);
-        user = {username: results[0].Username, id: results[0].id}
-        if (isValid) {
-          return done(null, user);
-        }
-        else {
-          return done(null, false)
-        }
-      });
-    })
+    new localStrategy({usernameField: "employeeId"},
+      (employeeId, password, done) => {
+        connection.query(`SELECT Employee_ID, Passcode, id FROM Login.Login WHERE Employee_ID = "${employeeId}"`, (error, results, fields) => {
+          if (error) return done(error);
+          if (results.length===0) return done(null, false);
+          const isValid = bcrypt.compare(password, results[0].Passcode);
+          user = {employeeId: results[0].Employee_ID, id: results[0].id}
+          if (isValid) {
+            return done(null, user);
+          }
+          else {
+            return done(null, false)
+          }
+        });
+      })
   );
 
   //Description: this serializes the user and returns the user id associated with the user
   passport.serializeUser((user, done) => {
     done(null, user.id);
   });
-  //Description: this takes a user id and returns the username of the user and the id of that user
+
+  //Description: this takes a user id and returns the employeeId of the user and the id of that user
   //TODO: return name, and some other data once that is implemented elsewhere
   passport.deserializeUser((id, done) => {
-    connection.query(`SELECT Username, id FROM Login.Login WHERE id = "${id}"`, (error, results) => {
+    connection.query(`SELECT Employee_ID, id FROM Login.Login WHERE id = "${id}"`, (error, results) => {
       const userInformation = {
-        username: results[0].Username,
+        employeeId: results[0].Employee_ID,
         id: results[0].id
       }
       done(null, userInformation);
