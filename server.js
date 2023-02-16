@@ -152,6 +152,21 @@ app.get("/invoices", (req, res) => {
     });
 });
 
+//this endpoint will check if a given username is present in the database
+app.get("/validusername/:username", (req, res) => {
+    const username = req.params.username;
+    const q = `SELECT Username FROM Login.Login WHERE Username = "${username}" `;
+    connection.query(q, (err, result) => {
+        if (err) return res.json(err);
+        if(result[0]) {
+            return res.json({response: true});
+        }
+        else {
+            return res.json({response: false});
+        }
+    })
+})
+
 /*
 -Author: Mason Otto
 -Last Modified: 2/1/2023 -Mason Otto
