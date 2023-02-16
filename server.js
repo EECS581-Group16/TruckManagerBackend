@@ -253,13 +253,14 @@ app.put("/verifyotp", (req, res) => {
 -Last Modified: 2/15/2023 - Ryan Penrod
 -Changes: Updated uses of username with employee ID
 */
-app.put("/forgotpassword", (req, res) => {
+app.put("/forgotpassword", async (req, res) => {
     const employeeId = req.body.employeeId;
     const newPassword = req.body.newPassword;
     if(!passwordRegex.test(newPassword)) {
         return res.json({response: false, errcode: 1}) //password does not meet requirements
     }
-    const q = `UPDATE Login.Login SET Passcode = "${newPassword}" WHERE Employee_ID = "${employeeId}"`;
+    const hashedPassword = await bcrypt.hash(newPassword, SALT);
+    const q = `UPDATE Login.Login SET Passcode = "${hashedPassword}}" WHERE Employee_ID = "${employeeId}"`;
     connection.query(q, (err, result) => {
         if (err) return res.json({response: false, errcode: 2}); //failed to update to database
         return res.json({response: true, errcode: 0}); //successful password change
