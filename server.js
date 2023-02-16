@@ -286,14 +286,11 @@ app.post("/newemployee", (req, res) => {
     const firstName = req.body.firstName;
     const lastName  = req.body.lastName;
     const accountType = req.body.accountType;
-    //username for John Smith should generate to be something like, jsmith23
-    const username = (firstName[0] + lastName).toLowerCase() + Math.floor(Math.random().toFixed(2)*100);
 
-    const q = "INSERT INTO Login.Login (`id`,`Employee_ID`,`Username`,`Passcode`,`Email`,`Firstname`,`Lastname`,`OTP`,`Verified`,`Account_Type`) VALUES (?)";
+    const q = "INSERT INTO Login.Login (`id`,`Employee_ID`,`Passcode`,`Email`,`Firstname`,`Lastname`,`OTP`,`Verified`,`Account_Type`) VALUES (?)";
     const values = [
         uuid,
         employeeId,
-        username,
         null,
         null,
         firstName,
@@ -320,7 +317,7 @@ app.post("/newemployee", (req, res) => {
                 return res.json({message: "FAILED"});
             }
         });
-        return res.json({message: "CREATED", username: username, employeeId: employeeId, firstName: firstName, lastName: lastName});
+        return res.json({message: "CREATED", employeeId: employeeId, firstName: firstName, lastName: lastName});
     });
 
 })
