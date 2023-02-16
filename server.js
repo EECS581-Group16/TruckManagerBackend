@@ -152,6 +152,12 @@ app.get("/invoices", (req, res) => {
     });
 });
 
+/*
+-Original Author: Mason Otto
+
+-Last Modified: Ryan Penrod
+-Changes: Updated uses of username with employee ID
+*/
 //this endpoint will check if a given employeeId is present in the database
 app.get("/validemployeeid/:employeeid", (req, res) => {
     const employeeId = req.params.employeeid;
@@ -169,13 +175,18 @@ app.get("/validemployeeid/:employeeid", (req, res) => {
 
 /*
 -Author: Mason Otto
--Last Modified: 2/1/2023 -Mason Otto
--Recent Modifications: Added email decryption
 -Description: This will set an OTP in the SQL database for the user that requested
     it. Then it will send that OTP to the email that user has stored in
     the database.
 -Returns: JSON response - status of email sent
 -TODO: Give OTP an expiration.
+
+
+-Modified: 2/1/2023 -Mason Otto
+-Recent Modifications: Added email decryption
+
+-Last Modified: 2/15/2023 - Ryan Penrod
+-Changes: Updated uses of username with employee ID
 */
 app.put("/requestotp", (req, res) => {
     const employeeId = req.body.employeeId;
@@ -204,11 +215,15 @@ app.put("/requestotp", (req, res) => {
 
 /*
 -Author: Mason Otto
--Last Modified: 1/23/2023
 -Description: This will take in the user input OTP and their employeeId to verify if the OTP is correct.
     If correct then it will allow the user to update their password.
 -Returns: JSON response - status of OTP verification
 -TODO: Figure out some way to determine if OTP has expired.
+
+-Modified: 1/23/2023 - Mason Otto
+
+-Last Modified: 2/15/2023 - Ryan Penrod
+-Changes: Updated uses of username with employee ID
 */
 app.put("/verifyotp", (req, res) => {
     const employeeId = req.body.employeeId;
@@ -232,6 +247,12 @@ app.put("/verifyotp", (req, res) => {
 
 //This will update the password in the database with the given employeeId and new password
 //NEED TO ENCRYPT PASSWORDS IN FUTURE
+/*
+-Original Author: Mason Otto
+
+-Last Modified: 2/15/2023 - Ryan Penrod
+-Changes: Updated uses of username with employee ID
+*/
 app.put("/forgotpassword", (req, res) => {
     const employeeId = req.body.employeeId;
     const newPassword = req.body.newPassword;
@@ -275,8 +296,12 @@ app.post("/invoices", (req, res) => {
 /*
     Author: Mason Otto
     Created: 2/9/2023
-    Last Modified: 2/9/2023
     Description: This is where admin users will be able to add new employees
+    
+    Modified: 2/9/2023 - Mason Otto
+
+    Last Modified: 2/15/2023 - Ryan Penrod
+    Changes: Updated uses of username with employee ID
 */
 app.post("/newemployee", (req, res) => {
     const uuid = crypto.randomUUID(); //this will generate a random 36 character long UUID
@@ -400,12 +425,16 @@ app.get("/loginData", (req, res) => {
 
 /*
 -Author: Mason Otto
--Last Modified: 2/5/2023 - Mason Otto
-Recent Modifications: Added passport functionality to verifying login
 -Description: Endpoint for login, this takes an employeeId and password and will authenticate that user,
     a cookie is stored in the browser for future authentication with passport
 -Returns: JSON with a response message, accepted, and id of user authenticated
 -TODO: test further for error handling
+
+-Modified: 2/5/2023 - Mason Otto
+Recent Modifications: Added passport functionality to verifying login
+
+-Last Modified 2/15/2023 - Ryan Penrod
+-Changes: updated uses of username with employee ID
 */
 app.post("/login", (req, res, next) => {
     passport.authenticate("local", (err, user, info) => {

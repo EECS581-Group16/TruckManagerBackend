@@ -22,11 +22,13 @@ const connection = mysql.createConnection({
 
 /*
 -Author: Mason Otto
--Last Modified: 2/5/2023
 -Description: Local Strategy to be used for passport.js, this goes through and authenticates
   the user off of the credentials provided by the user.
 -Returns: Object with user data
 -TODO: test further (if needed)
+
+-Last Modified: 2/15/2023 by Ryan Penrod
+-Changes: Updated uses of username with employee ID
 */
 module.exports = function(passport) {
   passport.use("local",
