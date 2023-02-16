@@ -34,10 +34,10 @@ module.exports = function(passport) {
   passport.use("local",
     new localStrategy({usernameField: "employeeId"},
       (employeeId, password, done) => {
-        connection.query(`SELECT Employee_ID, Passcode, id FROM Login.Login WHERE Employee_ID = "${employeeId}"`, (error, results, fields) => {
+        connection.query(`SELECT Employee_ID, Passcode, id FROM Login.Login WHERE Employee_ID = "${employeeId}"`, async (error, results, fields) => {
           if (error) return done(error);
           if (results.length===0) return done(null, false);
-          const isValid = bcrypt.compare(password, results[0].Passcode);
+          const isValid = await bcrypt.compare(password, results[0].Passcode);
           user = {employeeId: results[0].Employee_ID, id: results[0].id}
           if (isValid) {
             return done(null, user);

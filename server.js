@@ -260,7 +260,7 @@ app.put("/forgotpassword", async (req, res) => {
         return res.json({response: false, errcode: 1}) //password does not meet requirements
     }
     const hashedPassword = await bcrypt.hash(newPassword, SALT);
-    const q = `UPDATE Login.Login SET Passcode = "${hashedPassword}}" WHERE Employee_ID = "${employeeId}"`;
+    const q = `UPDATE Login.Login SET Passcode = "${hashedPassword}" WHERE Employee_ID = "${employeeId}"`;
     connection.query(q, (err, result) => {
         if (err) return res.json({response: false, errcode: 2}); //failed to update to database
         return res.json({response: true, errcode: 0}); //successful password change
@@ -306,7 +306,6 @@ app.post("/invoices", (req, res) => {
 */
 app.post("/newemployee", (req, res) => {
     const uuid = crypto.randomUUID(); //this will generate a random 36 character long UUID
-    
     const id = uuid;
     const employeeId = req.body.employeeId;
     const firstName = req.body.firstName;
