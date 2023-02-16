@@ -128,25 +128,6 @@ async function mail(email, otp) {
     });
 }
 
-/*
--Author: Mason Otto
--Last Modified: 2/1/2023
--Description: This will check the database to make sure that we are not registering a user that already exists.
--Returns: JSON response - status of duplicate user or not
--TODO: everything
-*/
-async function validateNewUser(user) {
-    const username = user;
-    const q = `SELECT Username FROM Login.Login WHERE Username = "${username}" `;
-    connection.query(q, (err, result) => {
-        if (err) return res.json(err);
-        if(result[0]) {
-            return false;
-        }
-        return true;
-    })
-}
-
 /*-------------------------------------------------------------------
     Backend Endpoints
 
@@ -170,21 +151,6 @@ app.get("/invoices", (req, res) => {
         return res.json(result);
     });
 });
-
-//this endpoint will check if a given username is present in the database
-app.get("/validusername/:username", (req, res) => {
-    const username = req.params.username;
-    const q = `SELECT Username FROM Login.Login WHERE Username = "${username}" `;
-    connection.query(q, (err, result) => {
-        if (err) return res.json(err);
-        if(result[0]) {
-            return res.json({response: true});
-        }
-        else {
-            return res.json({response: false});
-        }
-    })
-})
 
 /*
 -Author: Mason Otto
