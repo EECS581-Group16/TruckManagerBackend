@@ -57,10 +57,11 @@ module.exports = function(passport) {
   //Description: this takes a user id and returns the employeeId of the user and the id of that user
   //TODO: return name, and some other data once that is implemented elsewhere
   passport.deserializeUser((id, done) => {
-    connection.query(`SELECT Employee_ID, id FROM Login.Login WHERE id = "${id}"`, (error, results) => {
+    connection.query(`SELECT Employee_ID, id, Account_Type FROM Login.Login WHERE id = "${id}"`, (error, results) => {
       const userInformation = {
         employeeId: results[0].Employee_ID,
-        id: results[0].id
+        id: results[0].id,
+        accountType: results[0].Account_Type,
       }
       done(null, userInformation);
     });
