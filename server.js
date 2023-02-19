@@ -371,6 +371,46 @@ app.put("/updateuser", (req, res) => {
 })
 
 /*
+    Author: Mason Otto
+    Created: 2/19/2023
+    Last Modified: 2/19/2023
+    Description: This is the endpoint to be hit when requesting the users data from UserData table
+*/
+app.get("/userdata", async (req, res) => {
+    if(!req.isAuthenticated()) return res.json({authenticated: false});
+
+    const q = `SELECT State, City, Street, Zipcode, Phone FROM UserData.UserData WHERE id = '${req.user.id}'`;
+    connection.query(q, (err, result, fields) => {
+        if (err) {
+            console.log(err);
+            return res.json({message: "FAILED"});
+        }
+        const q2 = `SELECT Email, Firstname, Lastname FROM Login.Login WHERE id = '${req.user.id}'`;
+        connection.query(q2, (err, result2, fields2) => {
+            if (err) {
+                console.log(err);
+                return res.json({message: "FAILED"});
+            }
+            //TODO: decrypt email
+            const decipherText = crypto.createDecipheriv(ALGORITHM, SECKEY, INVEC);
+            let decryptedEmail = decipherText.update(result2[0].Email, "hex", "utf-8");
+            decryptedEmail += decipherText.final("utf8");
+            return res.json({
+                message: "SUCCESS",
+                state: result[0].State, 
+                street: result[0].Street, 
+                zipcode: result[0].Zipcode, 
+                phone: result[0].Phone,
+                email: decryptedEmail,
+                firstName: result2[0].Firstname,
+                lastName: result2[0].Lastname,
+                employeeId: req.user.employeeId,
+            });
+        })
+    })
+})
+
+/*
 -Author: Ryan Penrod
 
 <--- MODIFICATIONS --->
