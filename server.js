@@ -342,7 +342,7 @@ app.post("/newemployee", (req, res) => {
                 return res.json({message: "FAILED"});
             }
         });
-        return res.json({message: "CREATED", employeeId: employeeId, firstName: firstName, lastName: lastName});
+        return res.json({message: "CREATED", employeeId: employeeId, name: name});
     });
 
 })
