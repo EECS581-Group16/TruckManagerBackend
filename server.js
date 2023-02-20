@@ -311,15 +311,15 @@ app.post("/newemployee", (req, res) => {
     const firstName = req.body.firstName;
     const lastName  = req.body.lastName;
     const accountType = req.body.accountType;
+    const name = firstName + " " + lastName;
 
-    const q = "INSERT INTO Login.Login (`id`,`Employee_ID`,`Passcode`,`Email`,`Firstname`,`Lastname`,`OTP`,`Verified`,`Account_Type`) VALUES (?)";
+    const q = "INSERT INTO Login.Login (`id`,`Employee_ID`,`Passcode`,`Email`,`Name`, `OTP`,`Verified`,`Account_Type`) VALUES (?)";
     const values = [
         uuid,
         employeeId,
         null,
         null,
-        firstName,
-        lastName,
+        name,
         "null",
         0,
         accountType,
@@ -379,13 +379,13 @@ app.put("/updateuser", (req, res) => {
 app.get("/userdata", async (req, res) => {
     if(!req.isAuthenticated()) return res.json({authenticated: false});
 
-    const q = `SELECT State, City, Street, Zipcode, Phone FROM UserData.UserData WHERE id = '${req.user.id}'`;
+    const q = `SELECT State, City, Street, Zipcode, Creation_Date, Phone FROM UserData.UserData WHERE id = '${req.user.id}'`;
     connection.query(q, (err, result, fields) => {
         if (err) {
             console.log(err);
             return res.json({message: "FAILED"});
         }
-        const q2 = `SELECT Email, Firstname, Lastname FROM Login.Login WHERE id = '${req.user.id}'`;
+        const q2 = `SELECT Email, Name FROM Login.Login WHERE id = '${req.user.id}'`;
         connection.query(q2, (err, result2, fields2) => {
             if (err) {
                 console.log(err);
@@ -402,9 +402,9 @@ app.get("/userdata", async (req, res) => {
                 zipcode: result[0].Zipcode, 
                 phone: result[0].Phone,
                 email: decryptedEmail,
-                firstName: result2[0].Firstname,
-                lastName: result2[0].Lastname,
+                name: result2[0].Name,
                 employeeId: req.user.employeeId,
+                hireDate: result[0].Creation_Date,
             });
         })
     })
