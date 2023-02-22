@@ -360,7 +360,7 @@ app.put("/updateuser", (req, res) => {
     const zipcode = req.body.zipcode;
     const phone = req.body.phone;
 
-    const q = `UPDATE UserData.UserData SET State = "${state}", City = "${city}", Street = "${street}", Zipcode = "${zipcode}", Phone ="${phone}", New = "false"`
+    const q = `UPDATE UserData.UserData SET State = "${state}", City = "${city}", Street = "${street}", Zipcode = "${zipcode}", Phone ="${phone}", New = "false" WHERE id = '${req.user.id}'`
     connection.query(q, (err, result, fields) => {
         if (err) {
             console.log(err);
