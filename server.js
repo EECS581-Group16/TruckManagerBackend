@@ -399,6 +399,7 @@ app.get("/userdata", async (req, res) => {
                 message: "SUCCESS",
                 state: result[0].State, 
                 street: result[0].Street, 
+                city: result[0].City,
                 zipcode: result[0].Zipcode, 
                 phone: result[0].Phone,
                 email: decryptedEmail,
