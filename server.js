@@ -350,7 +350,9 @@ app.post("/newemployee", (req, res) => {
 /*
     Author: Mason Otto
     Created: 2/9/2023
-    Last Modified: 2/9/2023
+    Last Modified: 2/26/2023
+    Modified By: Mason Ott
+    Modifications: Added checking for fields to be proper length and that zipcode and phone number only contain numbers
     Description: This is where users will be able update their info for their user profile
 */
 app.put("/updateuser", (req, res) => {
@@ -359,6 +361,21 @@ app.put("/updateuser", (req, res) => {
     const street = req.body.street;
     const zipcode = req.body.zipcode;
     const phone = req.body.phone;
+
+    if(!req.isAuthenticated()) {
+        return res.json({authenticated: false});
+    }
+    //makes sure fields are of required length
+    if(state.length != 2 || phone.length != 10 || zipcode.length != 5 || street.length === 0 || city.length === 0) {
+        console.log("here")
+        return res.json({message: "FAILED"});
+    }
+    
+    //makes sure zipcode and phone number only contain numbers
+    const numbersOnlyRegex = /^[0-9]*$/;
+    if(!numbersOnlyRegex.test(zipcode) || !numbersOnlyRegex.test(phone)) {
+        return res.json({message: "FAILED"});
+    }
 
     const q = `UPDATE UserData.UserData SET State = "${state}", City = "${city}", Street = "${street}", Zipcode = "${zipcode}", Phone ="${phone}", New = "false" WHERE id = '${req.user.id}'`
     connection.query(q, (err, result, fields) => {
