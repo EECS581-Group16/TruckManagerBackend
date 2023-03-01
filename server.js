@@ -139,13 +139,20 @@ app.get("/", (req, res) => {
     res.json("hello this is the backend");
 });
 
-//returns all invoices tables
+/*
+    -Author: Mason Otto
+    -Last Modified: 3/1/23
+    -Description: This will return only the load tickets of the requesting users employeeId
+        If the user is an admin then it will return every load ticket.
+    -Returns: JSON response - load tickets
+*/
 app.get("/invoices", (req, res) => {
     if(!req.isAuthenticated()) {
         return res.json({authenticated: false});
     }
-    const q = "SELECT * FROM accounting.load_tickets_test";
-    //const q = "SELECT * FROM accounting.load_tickets";
+    const q = (req.user.accountType === "Admin" ? 
+        "SELECT * FROM accounting.load_tickets_test" : 
+        `SELECT * FROM accounting.load_tickets_test WHERE driver_id=${req.user.employeeId}`);
     connection.query(q, (err, result) => {
         if (err) return res.json(err);
         return res.json(result);
@@ -351,7 +358,7 @@ app.post("/newemployee", (req, res) => {
     Author: Mason Otto
     Created: 2/9/2023
     Last Modified: 2/26/2023
-    Modified By: Mason Ott
+    Modified By: Mason Otto
     Modifications: Added checking for fields to be proper length and that zipcode and phone number only contain numbers
     Description: This is where users will be able update their info for their user profile
 */
