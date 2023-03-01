@@ -159,6 +159,19 @@ app.get("/invoices", (req, res) => {
     });
 });
 
+app.delete("/deleteinvoice", (req, res) => {
+    if(!req.isAuthenticated()) { return res.json({authenticated: false}); }
+    const ticket_id = req.body.ticketId;
+    const q = (req.user.accountType === "Admin" ?
+        `DELETE FROM accounting.load_tickets_test WHERE ticket_id =${ticket_id}` :
+        `DELETE FROM accounting.load_tickets_test WHERE ticket_id =${ticket_id} AND driver_id=${req.user.employeeId}`);
+    connection.query(q, (err, result) => {
+        if (err) return res.json(err);
+        console.log(result);
+        return (res.json({message: "DELETED"}));
+    })
+})
+
 /*
 -Original Author: Mason Otto
 
