@@ -167,7 +167,6 @@ app.delete("/deleteinvoice", (req, res) => {
         `DELETE FROM accounting.load_tickets_test WHERE ticket_id =${ticket_id} AND driver_id=${req.user.employeeId}`);
     connection.query(q, (err, result) => {
         if (err) return res.json(err);
-        console.log(result);
         return (res.json({message: "DELETED"}));
     })
 })
