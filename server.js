@@ -457,12 +457,16 @@ app.get("/userdata", async (req, res) => {
 
     2/9/2023 - Mason Otto
         Recent Modifications: added regex for email and password format
-        -Description: This create a new row on the Login table
-            for a user given the information they provided
-        -Returns: JSON response - status account creation
+    
+    3/5/2023 - Mason Otto
+        Recent Modifications: added checking for if user has been created already and for if the employee id is valid or not
+            
+-Description: This create a new row on the Login table
+    for a user given the information they provided
+-Returns: JSON response - status account creation
 
 -TODO: Consider all fields
-       Need to set up error handling for if a employee is already in the database. -MO
+       Need to set up error message for email already existing. -MO
 */
 app.put("/register", async (req, res) => {
     const verifedQuery = `SELECT Verified from Login.Login WHERE Employee_ID = "${req.body.employeeId}"`
