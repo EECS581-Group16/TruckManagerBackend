@@ -462,33 +462,41 @@ app.get("/userdata", async (req, res) => {
         -Returns: JSON response - status account creation
 
 -TODO: Consider all fields
-       Need to set up error handling for if a uuid is already in the database. -MO
+       Need to set up error handling for if a employee is already in the database. -MO
 */
 app.put("/register", async (req, res) => {
-    //checks to make sure email is proper format
-    if (!emailRegex.test(req.body.email)) {
-        return res.json({message: "email"});
-    }
-    //checks to make sure password is proper format
-    if (!passwordRegex.test(req.body.passcode)) {
-        return res.json({message: "password"});
-    }
-
-    //The following statement will hash the passcode
-    const hashedPassword = await bcrypt.hash(req.body.passcode, SALT);
-
-    //The following will encrypt the email
-    const cipherText = crypto.createCipheriv(ALGORITHM, SECKEY, INVEC);
-    let encryptedEmail = cipherText.update(req.body.email, "utf-8", "hex");
-    encryptedEmail += cipherText.final("hex");
-
-    const q = `UPDATE Login.Login SET Passcode = "${hashedPassword}", Email = "${encryptedEmail}" WHERE Employee_ID = "${req.body.employeeId}"`
-    connection.query(q, (err, result, fields) => {
-        if (err) {
-            console.log(err);
-            return res.json({message: "FAILED"});
+    const verifedQuery = `SELECT Verified from Login.Login WHERE Employee_ID = "${req.body.employeeId}"`
+    connection.query(verifedQuery, async (err, result) => {
+        if(result.length === 0) {
+            return res.json({message: "employeeId"});
         }
-        return res.json({message: "CREATED"});
+        if(result[0].Verified === 1) {
+            return res.json({message: "exists"});
+        }
+        //checks to make sure email is proper format
+        if (!emailRegex.test(req.body.email)) {
+            return res.json({message: "email"});
+        }
+        //checks to make sure password is proper format
+        if (!passwordRegex.test(req.body.passcode)) {
+            return res.json({message: "password"});
+        }
+
+        //The following statement will hash the passcode
+        const hashedPassword = await bcrypt.hash(req.body.passcode, SALT);
+
+        //The following will encrypt the email
+        const cipherText = crypto.createCipheriv(ALGORITHM, SECKEY, INVEC);
+        let encryptedEmail = cipherText.update(req.body.email, "utf-8", "hex");
+        encryptedEmail += cipherText.final("hex");
+
+        const q = `UPDATE Login.Login SET Passcode = "${hashedPassword}", Email = "${encryptedEmail}", Verified = 1 WHERE Employee_ID = "${req.body.employeeId}"`
+        connection.query(q, (err, result, fields) => {
+            if (err) {
+                return res.json({message: "FAILED"});
+            }
+            return res.json({message: "CREATED"});
+        });
     });
 });
 
