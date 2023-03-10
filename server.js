@@ -513,6 +513,41 @@ app.get("/loginData", (req, res) => {
 });
 
 /*
+    Author: Mason Otto
+    Created: 3/9/2023
+    Last Modified: 3/9/2023
+    Modified By: Mason Otto
+    Description: returns every entry in the UserData.UserData table and the Name and Email from Login.Login table
+*/
+app.get("/employees", (req, res) => {
+    if(req.user.accountType !== "Admin") {
+        return res.json({message: "NOT AUTHORIZED"});
+    }
+    const q = "SELECT UserData.UserData.id, UserData.UserData.Employee_ID, UserData.UserData.Creation_Date, UserData.UserData.State, UserData.UserData.City, UserData.UserData.Street, UserData.UserData.Zipcode, UserData.UserData.Phone, Login.Login.Name, Login.Login.Email FROM UserData.UserData, Login.Login WHERE UserData.Employee_ID = Login.Login.Employee_ID";
+    connection.query(q, (err, result) => {
+        if(err) {
+            return res.json({message: "FAILED"});
+        }
+        for (i = 0; i < result.length; i++) {
+            if (result[i].Email === null) {
+                continue;
+            }
+            const decipherText = crypto.createDecipheriv(ALGORITHM, SECKEY, INVEC);
+            let decryptedEmail = decipherText.update(result[i].Email, "hex", "utf-8");
+            decryptedEmail += decipherText.final("utf8");
+            result[i].Email = decryptedEmail;
+            if (result[i].Creation_Date === null) {
+                continue;
+            }
+            const splitDate = result[i].Creation_Date.split(" ")[0].split("-");
+            const formattedDate = splitDate[1] + "/" + splitDate[2] + "/" + splitDate[0]; 
+            result[i].Creation_Date = formattedDate;
+        }
+        return res.json(result);
+    });
+});
+
+/*
 -Author: Mason Otto
 -Description: Endpoint for login, this takes an employeeId and password and will authenticate that user,
     a cookie is stored in the browser for future authentication with passport
