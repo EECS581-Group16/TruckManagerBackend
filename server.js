@@ -577,6 +577,17 @@ app.post("/login", (req, res, next) => {
       })(req, res, next);
 });
 
+app.post("/logout", (req, res) => {
+    req.logout((err) => {
+        if (err){
+            throw err;
+        }
+        else {
+            res.json({response: 'logged out'});
+        }
+    })
+})
+
 //creates new row in Login table
 //req will be used to input query data once we have this connected to our front end
 //for testing purposes we are using hardcoded values, sprint 6 will connect this to the front end
