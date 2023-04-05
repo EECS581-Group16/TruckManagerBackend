@@ -181,19 +181,13 @@ app.delete("/deleteemployee", (req, res) => {
     if(!req.isAuthenticated() && req.user.accountType !== "Admin") {
         return res.json({authenticated: false});
     }
-    const employee_id = req.body.employeeId;
-    const q = `DELETE FROM Login.Login WHERE Employee_ID =${employee_id}`;
+    const employee_id = parseInt(req.body.employeeId);
+    const q = `DELETE FROM Login.Login, UserData.UserData WHERE Employee_ID = ${employee_id}`;
     connection.query(q, (err, result) => {
         if (err) {
             return res.json(err);
         }
-        const q2 = `DELETE FROM UserData.UserData WHERE Employee_ID =${employee_id}`;
-        connection.query(q2, (err, result) => {
-            if (err) {
-                return res.json(err);
-            }
-            return res.json({message: "DELETED"});
-        });
+        return res.json({message: "DELETED"});
     });
     return res.json({message: "FAILED"});
 });
