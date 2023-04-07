@@ -182,14 +182,23 @@ app.delete("/deleteemployee", (req, res) => {
         return res.json({authenticated: false});
     }
     const employee_id = parseInt(req.body.employeeId);
-    const q = `DELETE FROM Login.Login, UserData.UserData WHERE Employee_ID = ${employee_id}`;
+    if(req.user.employeeId === employee_id) {
+        return res.json({message: "YOUNODELETE"});
+    }
+    let error = "";
+    const q = `DELETE FROM Login.Login WHERE Employee_ID=${employee_id}`;
     connection.query(q, (err, result) => {
         if (err) {
-            return res.json(err);
+            return res.json({message: "FAILED"});
+        }
+    });
+    const q2 = `DELETE FROM UserData.UserData WHERE Employee_ID=${employee_id}`;
+    connection.query(q2, (err, result) => {
+        if (err) {
+            return res.json({message: "FAILED"});
         }
         return res.json({message: "DELETED"});
     });
-    return res.json({message: "FAILED"});
 });
 
 /*
